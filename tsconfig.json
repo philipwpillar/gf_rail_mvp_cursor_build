@@ -37,5 +37,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "scripts"]
+  "exclude": ["node_modules", "scripts"] /* scripts use service role key; typed separately via tsx */
 }

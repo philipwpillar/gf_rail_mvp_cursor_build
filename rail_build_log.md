@@ -74,3 +74,6 @@
    - Create `lib/rae/types.ts` (foundation types/constants)
    - Create `lib/rae/surplus.ts` (compute \(S = I − O − Σ minPayments\))
 
+### Known debt to address before investor demo (Stage 7)
+- `app/login/page.tsx` and `app/signup/page.tsx` currently use plain HTML inputs/buttons; migrate to shadcn/ui components during Stage 7 UI work.
+

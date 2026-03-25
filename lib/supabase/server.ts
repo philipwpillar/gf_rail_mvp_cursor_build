@@ -24,8 +24,9 @@ export async function createClient() {
             cookieStore.set(name, value, options),
           );
         } catch {
-          // Called from a Server Component where setting cookies isn't allowed.
-          // Middleware or Route Handlers are the right place for cookie writes.
+          // Expected in Server Components (read-only cookies).
+          // Cookie writes only work in Route Handlers / Server Actions.
+          // The auth session will still be readable; this mainly affects token refresh.
         }
       },
     },

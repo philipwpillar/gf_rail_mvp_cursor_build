@@ -3,6 +3,8 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 dotenv.config({ path: ".env.local" });
 
+// TODO: generate Supabase types via `supabase gen types typescript` and replace `any` casts with a typed client.
+
 type SeedDebt = {
   label: string;
   lender: string | null;
@@ -47,7 +49,7 @@ const households: SeedHousehold[] = [
         lender: "Barclaycard",
         debt_type: "CARD",
         balance: 210_000,
-        apr: 0.349,
+        apr: 0.3490,
         min_payment: 4_200,
       },
       {
@@ -55,7 +57,7 @@ const households: SeedHousehold[] = [
         lender: "HSBC",
         debt_type: "CARD",
         balance: 190_000,
-        apr: 0.225,
+        apr: 0.2250,
         min_payment: 3_800,
       },
       {
@@ -63,7 +65,7 @@ const households: SeedHousehold[] = [
         lender: "Nationwide",
         debt_type: "LOAN",
         balance: 120_000,
-        apr: 0.128,
+        apr: 0.1280,
         min_payment: 2_500,
       },
     ],
@@ -84,7 +86,7 @@ const households: SeedHousehold[] = [
         lender: "Lloyds",
         debt_type: "LOAN",
         balance: 420_000,
-        apr: 0.059,
+        apr: 0.0590,
         min_payment: 9_500,
       },
     ],

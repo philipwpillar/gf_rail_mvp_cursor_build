@@ -19,6 +19,7 @@ export default async function DashboardPage() {
     .eq("user_id", user.id)
     .maybeSingle();
 
+  // TODO(Stage 7): replace this placeholder with the real dashboard UI (sidebar, pipeline status, allocation card, rationale).
   return (
     <div className="flex flex-1 items-center justify-center px-6 py-12">
       <div className="w-full max-w-xl">
