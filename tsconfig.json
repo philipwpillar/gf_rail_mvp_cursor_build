@@ -1,10 +1,17 @@
 {
   "compilerOptions": {
+    /* Phase 0A: strict mode off. Enable when CTO joins. */
     "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": true,
+    "strict": false,
+    /* These stay on — they catch real mistakes without compiler noise */
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    /* Reduce noise during rapid prototyping */
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -30,5 +37,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "scripts"]
 }
