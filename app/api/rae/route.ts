@@ -5,6 +5,7 @@ import type { DebtInstrument, HouseholdSnapshot } from "@/lib/rae/types";
 
 type HouseholdRow = {
   id: string;
+  display_name: string | null;
   monthly_income: number;
   income_volatility: number;
   fixed_obligations: number;
@@ -46,7 +47,7 @@ export async function GET() {
   const { data: household, error: householdError } = await supabase
     .from("household_profiles")
     .select(
-      "id, monthly_income, income_volatility, fixed_obligations, buffer_balance, plan_commitment_score",
+      "id, display_name, monthly_income, income_volatility, fixed_obligations, buffer_balance, plan_commitment_score",
     )
     .eq("user_id", user.id)
     .maybeSingle<HouseholdRow>();
@@ -99,5 +100,18 @@ export async function GET() {
   };
 
   const result = runRAE(snapshot);
-  return NextResponse.json({ result });
+  return NextResponse.json({
+    result,
+    context: {
+      householdName: household.display_name ?? "Household",
+      debts: (debtRows ?? []).map((debt) => ({
+        id: debt.id,
+        label: debt.label ?? debt.id,
+        apr: debt.apr,
+        balance: debt.balance,
+        minPayment: debt.min_payment,
+        isActive: debt.is_active,
+      })),
+    },
+  });
 }
