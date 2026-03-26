@@ -1,5 +1,36 @@
 # Rail Prototype — Build Log
 
+## 2026-03-26 — Stage 6 wiring (dashboard -> API -> pure RAE engine)
+
+### What shipped (repo state)
+- Added `app/api/rae/route.ts` as the first server-side execution boundary for RAE:
+  - Authenticates via `supabase.auth.getUser()`.
+  - Loads the caller's `household_profiles` row by `user_id`.
+  - Loads matching `debt_instruments` by `household_id`.
+  - Maps database fields into a `HouseholdSnapshot` for the engine.
+  - Runs `runRAE(snapshot)` and returns JSON `{ result }`.
+- Added `app/dashboard/rae-output-card.tsx`:
+  - Client-side card that calls `GET /api/rae` on mount.
+  - Shows loading, error, and initial recommendation values.
+  - Displays stage, surplus, B_min/B_target, and final allocation buckets.
+- Updated `app/dashboard/page.tsx`:
+  - Imports and renders `RaeOutputCard`.
+  - Updated copy to reflect live Stage 6 API wiring.
+
+### Architecture constraints preserved
+- `lib/rae/*` remains pure and side-effect free (no database/network access in engine path).
+- Database reads are contained to the API route layer (`app/api/rae/route.ts`).
+- Dashboard UI now consumes RAE output through the API boundary, not through direct data + engine coupling.
+
+### Stage 6 assumptions and TODOs
+- `incomeShockProbability` is currently set to `0` in API mapping for deterministic baseline output.
+- Added TODO in route to calibrate `pShock` from volatility/history in a later stage.
+
+### Validation
+- `npm run lint` passes.
+- `npm run test` passes (RAE seeded-household tests).
+- `npx tsc --noEmit` passes.
+
 ## 2026-03-25 — Stage 1 foundation (scaffold + Supabase + seed + RLS sanity)
 
 ### What shipped (repo state)

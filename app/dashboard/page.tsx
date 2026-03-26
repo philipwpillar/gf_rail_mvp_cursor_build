@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { RaeOutputCard } from "./rae-output-card";
 
 export const dynamic = "force-dynamic";
 
@@ -52,10 +53,13 @@ export default async function DashboardPage() {
 
         <div className="mt-6 rounded-lg border border-zinc-200 bg-white p-4">
           <p className="text-sm text-zinc-700">
-            Stage 1 foundation is in place. Next we’ll add the Supabase schema
-            + seed data, then implement the RAE engine behind the dashboard.
+            Stage 6 wiring is now live: this dashboard calls <code>/api/rae</code>,
+            which maps Supabase household/debt data into a pure{" "}
+            <code>runRAE</code> execution.
           </p>
         </div>
+
+        <RaeOutputCard />
       </div>
     </div>
   );
