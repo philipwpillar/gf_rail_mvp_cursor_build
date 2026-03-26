@@ -1,11 +1,10 @@
 import {
-  DEFAULT_RAE_CONFIG,
   PipelineStage,
   type AllocationVector,
   type HouseholdSnapshot,
 } from "./types";
 
-function zeroAllocation(): AllocationVector {
+export function zeroAllocation(): AllocationVector {
   return {
     bufferContribution: 0,
     investmentContribution: 0,
@@ -135,6 +134,4 @@ export function computeBaseAllocation(
   roundAndReconcile(allocation, surplus, "investment");
   return allocation;
 }
-
-export { DEFAULT_RAE_CONFIG };
 

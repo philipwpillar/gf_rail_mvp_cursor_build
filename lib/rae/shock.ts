@@ -62,6 +62,7 @@ export function applyShockAdjustment(
   pShock: number,
   snapshot: HouseholdSnapshot,
 ): ShockAdjustmentResult {
+  // TODO(Stage 7): use snapshot.incomeVolatility in shock probability calibration.
   void snapshot;
   const threshold = DEFAULT_RAE_CONFIG.shockThreshold;
 

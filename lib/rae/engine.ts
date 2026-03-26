@@ -6,16 +6,8 @@ import {
 } from "./types";
 import { computeSurplus } from "./surplus";
 import { classifyStage, computeBMin, computeBTarget } from "./classifier";
-import { computeBaseAllocation } from "./allocator";
+import { computeBaseAllocation, zeroAllocation } from "./allocator";
 import { applyShockAdjustment } from "./shock";
-
-function zeroAllocation(): AllocationVector {
-  return {
-    bufferContribution: 0,
-    investmentContribution: 0,
-    debtAllocations: [],
-  };
-}
 
 function formatPounds(pence: number): string {
   return `£${(pence / 100).toFixed(2)}`;
