@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { PipelineStage, type RAEResult } from "@/lib/rae/types";
 import { Sidebar } from "./components/sidebar";
 import { AllocationChart } from "./components/allocation-chart";
 import { DebtRoutingCard } from "./components/debt-routing-card";
+import type { RaeApiPayload } from "@/lib/server/rae-recommendation";
 
 function formatPounds(pence: number): string {
   return `£${(pence / 100).toFixed(2)}`;
@@ -39,64 +40,25 @@ type ApiContext = {
   }[];
 };
 
-type ApiPayload = {
-  result: RAEResult;
-  context: ApiContext;
-};
-
 function stageTone(stage: PipelineStage): string {
   if (stage === PipelineStage.STAGE_1_RESILIENCE) return "bg-amber-100 text-amber-800";
   if (stage === PipelineStage.STAGE_2_DEBT) return "bg-rose-100 text-rose-800";
   return "bg-emerald-100 text-emerald-800";
 }
 
-export function RaeOutputCard() {
-  const [result, setResult] = useState<RAEResult | null>(null);
-  const [context, setContext] = useState<ApiContext | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+type RaeOutputCardProps = {
+  initialPayload: RaeApiPayload | null;
+  initialError: string | null;
+};
 
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadRaeResult() {
-      try {
-        const response = await fetch("/api/rae", { method: "GET" });
-        const payload = await response.json();
-
-        if (!response.ok) {
-          throw new Error(payload?.error ?? "Failed to load RAE result.");
-        }
-
-        const typedPayload = payload as ApiPayload;
-        if (isMounted) {
-          setResult(typedPayload.result);
-          setContext(typedPayload.context);
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError(err instanceof Error ? err.message : "Failed to load RAE result.");
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    loadRaeResult();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    const saved = window.localStorage.getItem("rail.sidebar.collapsed");
-    if (saved === "true") {
-      setIsSidebarCollapsed(true);
-    }
-  }, []);
+export function RaeOutputCard({ initialPayload, initialError }: RaeOutputCardProps) {
+  const [result] = useState<RAEResult | null>(initialPayload?.result ?? null);
+  const [context] = useState<ApiContext | null>(initialPayload?.context ?? null);
+  const [error] = useState<string | null>(initialError);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("rail.sidebar.collapsed") === "true";
+  });
 
   function toggleSidebar() {
     setIsSidebarCollapsed((prev) => {
@@ -136,7 +98,7 @@ export function RaeOutputCard() {
               <div>
                 <h2 className="text-2xl font-semibold tracking-tight">Household Plan Scenario</h2>
                 <p className="mt-1 text-sm text-zinc-600">
-                  Live recommendation from <code>/api/rae</code> using pure <code>runRAE</code>.
+                  Server-preloaded recommendation generated from pure <code>runRAE</code>.
                 </p>
               </div>
               {result ? (
@@ -157,18 +119,21 @@ export function RaeOutputCard() {
               </div>
             </div>
 
-            {isLoading ? (
-              <p className="mt-6 text-sm text-zinc-700">Loading recommendation workspace...</p>
-            ) : null}
-
-            {!isLoading && error ? (
+            {error ? (
               <div className="mt-6 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
                 {error}
               </div>
             ) : null}
 
-            {!isLoading && !error && result ? (
+            {!error && result ? (
               <div className="mt-6 space-y-5">
+                {initialPayload?.meta.profileBootstrapped ? (
+                  <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-800">
+                    We initialized your household profile with starter values. Add your real income,
+                    obligations, and debts to receive a personalized recommendation.
+                  </div>
+                ) : null}
+
                 <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
                   <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
                     <p className="text-xs uppercase tracking-wide text-zinc-500">Monthly Surplus</p>

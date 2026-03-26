@@ -34,6 +34,32 @@
 - `npm run test` passes.
 - `npx tsc --noEmit` passes.
 
+## 2026-03-26 — Stage 7 integration hardening (audit resilience + profile bootstrap + server preload)
+
+### What shipped (repo state)
+- Added `lib/server/rae-recommendation.ts` to centralize recommendation integration logic:
+  - Ensures household profile exists (auto-bootstraps first-time users).
+  - Loads debt instruments and constructs engine snapshot.
+  - Executes pure `runRAE(snapshot)`.
+  - Attempts `rae_executions` audit insert without hard-failing user experience.
+- Updated API route (`app/api/rae/route.ts`):
+  - Uses shared server recommendation builder.
+  - Returns client-safe generic error on internal failures.
+- Updated dashboard preload flow (`app/dashboard/page.tsx` + `app/dashboard/rae-output-card.tsx`):
+  - Recommendation is preloaded server-side.
+  - Removed client-side fetch/loading flash for the main recommendation payload.
+  - Added a visible onboarding cue when a household profile is bootstrapped automatically.
+
+### Why this matters
+- New signups no longer hit a dead-end 404 when no profile row exists.
+- Audit insertion problems are observable in server logs without blanking the dashboard.
+- Investor-demo flow is smoother with immediate first paint of recommendation content.
+
+### Validation
+- `npm run lint` passes.
+- `npm run test` passes.
+- `npx tsc --noEmit` passes.
+
 ## 2026-03-26 — Stage 6 wiring (dashboard -> API -> pure RAE engine)
 
 ### What shipped (repo state)
