@@ -1,5 +1,39 @@
 # Rail Prototype — Build Log
 
+## 2026-03-26 — Stage 7 dashboard UI build (scenario workspace + collapsible sidebar)
+
+### What shipped (repo state)
+- Upgraded `app/dashboard/rae-output-card.tsx` from a basic output card into a full dashboard workspace:
+  - Left "fake sidebar" navigation in a single-page layout.
+  - Scenario header with stage badge and tab strip.
+  - KPI row for surplus, current buffer floor (`B_min`), and target buffer (`B_target`).
+  - Allocation plan card showing buffer/debt/investment monthly contributions.
+  - Risk and rationale card from `runRAE` output.
+- Added charting via `recharts`:
+  - Donut visualization of final allocation mix (buffer/debt/investment).
+- Added collapsible sidebar behavior:
+  - Expanded/collapsed widths on desktop.
+  - Icon-only collapsed mode.
+  - User preference persisted in `localStorage`.
+- Enriched `/api/rae` response context consumed by dashboard UI:
+  - Household display name.
+  - Debt metadata for rendering debt routing labels and APR.
+
+### User experience intent
+- Mirrors a professional planning workspace structure suitable for investor-demo flows.
+- Keeps language in Rail domain terms (Allocation Plan, Cash Flow View, Historical Trends, Stress Test).
+- Keeps light-mode simplicity for current alpha phase.
+
+### Architecture constraints preserved
+- RAE core (`lib/rae/*`) remains pure and side-effect free.
+- Dashboard reads all recommendation data through `/api/rae`.
+- No database or network access was introduced into engine modules.
+
+### Validation
+- `npm run lint` passes.
+- `npm run test` passes.
+- `npx tsc --noEmit` passes.
+
 ## 2026-03-26 — Stage 6 wiring (dashboard -> API -> pure RAE engine)
 
 ### What shipped (repo state)
@@ -30,6 +64,77 @@
 - `npm run lint` passes.
 - `npm run test` passes (RAE seeded-household tests).
 - `npx tsc --noEmit` passes.
+
+## 2026-03-26 — Stage 5 test harness (Jest + seeded engine tests)
+
+### What shipped (repo state)
+- Added `jest.config.ts` with `ts-jest` preset and Node test environment.
+- Added module alias mapping for `@/` paths (`^@/(.*)$` -> `<rootDir>/$1`).
+- Added `lib/rae/__tests__/engine.test.ts`:
+  - Sarah & James seeded scenario assertions (Stage 1 expected behavior).
+  - Mark & Lisa seeded scenario assertions (Stage 3 expected behavior).
+- Added `test` script to `package.json`.
+- Aligned Jest toolchain versions for compatibility:
+  - `jest` 29.x
+  - `ts-jest` 29.x
+  - `@types/jest` 29.x
+
+### Validation
+- `npm run test` passes (2/2 tests).
+- `npm run lint` passes.
+- `npx tsc --noEmit` passes.
+
+## 2026-03-25 to 2026-03-26 — Stage 4 integration (shock + engine + cleanup)
+
+### What shipped (repo state)
+- Added `lib/rae/shock.ts`:
+  - Shock factor calculation (`phi`).
+  - Stage-aware reallocation logic.
+  - Debt/investment redirection caps and reconciliation.
+- Added `lib/rae/engine.ts`:
+  - Orchestrates surplus -> classification -> base allocation -> shock adjustment.
+  - Returns full `RAEResult` contract including rationale text.
+  - Handles obligation-stress path with zero allocations.
+- Cleanup pass applied:
+  - Deduplicated `zeroAllocation()` by exporting from allocator and reusing in engine.
+  - Removed redundant allocator re-export noise.
+  - Added TODO marker for planned `incomeVolatility` integration in shock calibration.
+
+### Validation
+- Engine scenarios validated via subsequent Stage 5 tests.
+- Lint and typecheck passed after cleanup pass.
+
+## 2026-03-25 — Stage 3 decision layer (classification + allocation)
+
+### What shipped (repo state)
+- Added `lib/rae/classifier.ts`:
+  - Computes `B_min` and `B_target` from weekly obligations.
+  - Applies stage rules:
+    - Buffer below `B_min` -> Stage 1
+    - Else high-APR active debt -> Stage 2
+    - Else -> Stage 3
+- Added `lib/rae/allocator.ts`:
+  - Stage-specific base allocation logic.
+  - Alpha strategy (pure avalanche vs blended 70/30 split).
+  - Explicit pence rounding with reconciliation to exact surplus totals.
+
+### Validation
+- Allocation behavior validated through Stage 5 seeded tests.
+- Rounding invariant maintained in allocator.
+
+## 2026-03-25 — Stage 2 engine foundation (types + surplus)
+
+### What shipped (repo state)
+- Added `lib/rae/types.ts`:
+  - RAE domain types (`HouseholdSnapshot`, `AllocationVector`, `RAEResult`, etc.).
+  - Pipeline stage enum and default config constants.
+- Added `lib/rae/surplus.ts`:
+  - Computes discretionary surplus:
+    - `monthlyIncome - fixedObligations - sum(active debt minimums)`.
+  - Flags obligation stress when surplus is `<= 0`.
+
+### Validation
+- Formula and contracts integrated cleanly with later Stage 3/4 modules.
 
 ## 2026-03-25 — Stage 1 foundation (scaffold + Supabase + seed + RLS sanity)
 
