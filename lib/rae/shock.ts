@@ -1,4 +1,4 @@
-import { DEFAULT_RAE_CONFIG, PipelineStage, type AllocationVector, type HouseholdSnapshot } from "./types";
+import { DEFAULT_RAE_CONFIG, PipelineStage, type AllocationVector } from "./types";
 
 export interface ShockAdjustmentResult {
   finalAllocation: AllocationVector;
@@ -60,10 +60,7 @@ export function applyShockAdjustment(
   allocation: AllocationVector,
   stage: PipelineStage,
   pShock: number,
-  snapshot: HouseholdSnapshot,
 ): ShockAdjustmentResult {
-  // TODO(Stage 7): use snapshot.incomeVolatility in shock probability calibration.
-  void snapshot;
   const threshold = DEFAULT_RAE_CONFIG.shockThreshold;
 
   if (pShock <= threshold) {

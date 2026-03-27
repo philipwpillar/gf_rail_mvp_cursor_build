@@ -100,7 +100,6 @@ export function runRAE(snapshot: HouseholdSnapshot): RAEResult {
     baseAllocation,
     stage,
     snapshot.incomeShockProbability,
-    snapshot,
   );
 
   return {

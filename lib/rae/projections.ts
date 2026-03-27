@@ -17,6 +17,9 @@ export interface ProjectionResult {
 }
 
 const PROJECTION_MONTHS = 60;
+// Nominal annual growth rate for index fund projection (Phase 0A assumption).
+const ANNUAL_GROWTH_RATE = 0.07;
+const MONTHLY_GROWTH_RATE = ANNUAL_GROWTH_RATE / 12;
 
 function cloneSnapshot(snapshot: HouseholdSnapshot): HouseholdSnapshot {
   return {
@@ -95,7 +98,7 @@ export function computeProjections(snapshot: HouseholdSnapshot): ProjectionResul
     });
 
     const nextBufferBalance = projected.bufferBalance + allocation.bufferContribution;
-    investmentValue += allocation.investmentContribution;
+    investmentValue = investmentValue * (1 + MONTHLY_GROWTH_RATE) + allocation.investmentContribution;
     const totalDebt = totalDebtBalance(nextDebts);
     const surplusAllocated =
       allocation.bufferContribution +
@@ -122,7 +125,6 @@ export function computeProjections(snapshot: HouseholdSnapshot): ProjectionResul
   }
 
   const baselineInterest = computeMinimumOnlyInterest(snapshot);
-  // TODO: Phase 0B should model investment compounding assumptions explicitly.
   return {
     debtFreeMonth,
     totalInterestPaid,
