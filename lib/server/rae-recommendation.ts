@@ -1,6 +1,10 @@
-import { DEFAULT_RAE_CONFIG, type DebtInstrument, type HouseholdSnapshot, type RAEResult } from "@/lib/rae/types";
+import { DEFAULT_RAE_CONFIG, type HouseholdSnapshot, type RAEResult } from "@/lib/rae/types";
 import { runRAE } from "@/lib/rae/engine";
 import { computeProjections, type ProjectionResult } from "@/lib/rae/projections";
+import {
+  buildHouseholdSnapshot,
+  type DebtSnapshotRow,
+} from "@/lib/server/snapshot-utils";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 type HouseholdRow = {
@@ -13,16 +17,7 @@ type HouseholdRow = {
   plan_commitment_score: number;
 };
 
-type DebtRow = {
-  id: string;
-  label: string | null;
-  lender: string | null;
-  debt_type: DebtInstrument["type"];
-  balance: number;
-  apr: number;
-  min_payment: number;
-  is_active: boolean;
-};
+type DebtRow = DebtSnapshotRow;
 
 export type RaeApiPayload = {
   result: RAEResult;
@@ -50,11 +45,6 @@ type BuildRaeRecommendationInput = {
   userEmail?: string | null;
   writeAudit: boolean;
 };
-
-function deriveShockProbability(monthlyIncome: number, incomeVolatility: number): number {
-  if (monthlyIncome <= 0) return 0;
-  return Math.max(0, Math.min((incomeVolatility / monthlyIncome) * 2, 1));
-}
 
 async function ensureHouseholdProfile(
   supabase: SupabaseClient,
@@ -114,25 +104,7 @@ export async function buildRaeRecommendation({
 
   if (debtError) throw new Error("Failed to load debt instruments.");
 
-  const pShock = deriveShockProbability(household.monthly_income, household.income_volatility);
-  const snapshot: HouseholdSnapshot = {
-    monthlyIncome: household.monthly_income,
-    incomeVolatility: household.income_volatility,
-    fixedObligations: household.fixed_obligations,
-    bufferBalance: household.buffer_balance,
-    planCommitmentScore: household.plan_commitment_score,
-    incomeShockProbability: pShock,
-    debts: (debtRows ?? []).map((debt) => ({
-      id: debt.id,
-      label: debt.label ?? undefined,
-      lender: debt.lender,
-      type: debt.debt_type,
-      balance: debt.balance,
-      apr: debt.apr,
-      minPayment: debt.min_payment,
-      isActive: debt.is_active,
-    })),
-  };
+  const snapshot: HouseholdSnapshot = buildHouseholdSnapshot(household, debtRows ?? []);
 
   const result = runRAE(snapshot);
   const projections = computeProjections(snapshot);

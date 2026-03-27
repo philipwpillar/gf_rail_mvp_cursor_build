@@ -46,29 +46,6 @@ describe("computeProjections", () => {
 
     const result = computeProjections(snapshot);
 
-    // Debug print: first 3 monthly snapshots (months 0, 1, 2)
-    const initialTotalDebt = snapshot.debts.reduce((sum, d) => sum + d.balance, 0);
-    const initialMinPayments = snapshot.debts.reduce((sum, d) => sum + d.minPayment, 0);
-    const initialSurplus = snapshot.monthlyIncome - snapshot.fixedObligations - initialMinPayments;
-
-    // Month 0 (pre-projection)
-    console.log("Sarah & James - Month 0", {
-      bufferBalance: snapshot.bufferBalance,
-      totalDebt: initialTotalDebt,
-      surplus: initialSurplus,
-      allocations: "N/A (no allocation applied yet)",
-    });
-
-    // Months 1 and 2 from projections.monthlySnapshots[0] and [1]
-    [0, 1].forEach((idx) => {
-      const m = result.monthlySnapshots[idx];
-      console.log(`Sarah & James - Month ${m.month}`, {
-        bufferBalance: m.bufferBalance,
-        totalDebt: m.totalDebt,
-        surplusAllocated: m.surplusAllocated,
-      });
-    });
-
     expect(result.monthlySnapshots).toHaveLength(60);
     expect(result.debtFreeMonth).not.toBeNull();
     expect(result.debtFreeMonth).toBeGreaterThanOrEqual(10);

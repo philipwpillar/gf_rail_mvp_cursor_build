@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Sidebar } from "./components/sidebar";
+import { DashboardShell } from "./components/dashboard-shell";
 import type { ReactNode } from "react";
 
 export const dynamic = "force-dynamic";
@@ -27,19 +27,6 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
 
   const householdName = household?.display_name ?? "Household";
 
-  return (
-    <div className="mt-6 overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50">
-      <div className="grid min-h-[760px] grid-cols-1 lg:grid-cols-[260px_1fr]">
-        <Sidebar
-          isCollapsed={false}
-          onToggle={() => {
-            // Sidebar collapse is handled client-side within the component.
-          }}
-          householdName={householdName}
-        />
-        <section className="bg-zinc-50 p-5">{children}</section>
-      </div>
-    </div>
-  );
+  return <DashboardShell householdName={householdName}>{children}</DashboardShell>;
 }
 

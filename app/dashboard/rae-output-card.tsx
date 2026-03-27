@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { PipelineStage, type RAEResult } from "@/lib/rae/types";
-import { Sidebar } from "./components/sidebar";
 import { AllocationChart } from "./components/allocation-chart";
 import { DebtRoutingCard } from "./components/debt-routing-card";
 import { ProjectionsPanel } from "./components/projections-panel";
@@ -57,18 +56,6 @@ export function RaeOutputCard({ initialPayload, initialError }: RaeOutputCardPro
   const [projections] = useState(initialPayload?.projections ?? null);
   const [context] = useState<ApiContext | null>(initialPayload?.context ?? null);
   const [error] = useState<string | null>(initialError);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return window.localStorage.getItem("rail.sidebar.collapsed") === "true";
-  });
-
-  function toggleSidebar() {
-    setIsSidebarCollapsed((prev) => {
-      const next = !prev;
-      window.localStorage.setItem("rail.sidebar.collapsed", String(next));
-      return next;
-    });
-  }
 
   const chartData =
     !result
@@ -84,18 +71,7 @@ export function RaeOutputCard({ initialPayload, initialError }: RaeOutputCardPro
         ].filter((item) => item.value > 0);
 
   return (
-    <div className="mt-6 overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50">
-      <div
-        className={`grid min-h-[760px] grid-cols-1 ${isSidebarCollapsed ? "lg:grid-cols-[84px_1fr]" : "lg:grid-cols-[260px_1fr]"}`}
-      >
-        <Sidebar
-          isCollapsed={isSidebarCollapsed}
-          onToggle={toggleSidebar}
-          householdName={context?.householdName}
-        />
-
-        <section className="bg-zinc-50 p-5">
-          <div className="rounded-xl border border-zinc-200 bg-white p-5">
+    <div className="rounded-xl border border-zinc-200 bg-white p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-2xl font-semibold tracking-tight">Household Plan Scenario</h2>
@@ -222,9 +198,6 @@ export function RaeOutputCard({ initialPayload, initialError }: RaeOutputCardPro
                 ) : null}
               </div>
             ) : null}
-          </div>
-        </section>
-      </div>
     </div>
   );
 }
