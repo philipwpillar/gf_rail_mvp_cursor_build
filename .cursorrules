@@ -1,0 +1,134 @@
+DEVELOPMENT PRINCIPLES
+
+These principles govern every file generated in this project.
+Cross-reference them before producing any output.
+
+---
+
+ARCHITECTURE
+
+1. RAE IS A PURE FUNCTION — NEVER VIOLATE THIS.
+   lib/rae/engine.ts and all files it calls (surplus.ts, classifier.ts,
+   allocator.ts, shock.ts) must have zero database access and zero
+   network calls. They receive data as arguments and return results.
+   Only app/api/rae/route.ts touches Supabase.
+
+2. SEPARATION OF CONCERNS — ONE FILE, ONE JOB.
+   surplus.ts computes surplus only. classifier.ts determines stage only.
+   allocator.ts distributes money only. shock.ts applies shock adjustment
+   only. engine.ts orchestrates only. Never merge these concerns.
+
+3. SCHEMA FIRST — UI NEVER DRIVES DATA SHAPE.
+   The database schema in rail_database_schema.md is the source of truth.
+   No TypeScript type, API response shape, or component prop may
+   contradict it. If a conflict appears, flag it before generating code.
+
+4. APP ROUTER ONLY — NEVER PAGES ROUTER.
+   All Next.js files live in the app/ directory. Never generate files
+   in a pages/ directory. Never use getServerSideProps or getStaticProps.
+
+5. SERVER COMPONENTS BY DEFAULT.
+   All data fetching happens in server components or API routes.
+   Use 'use client' only when the component requires browser APIs,
+   user interaction state, or React hooks. Never fetch Supabase data
+   in a client component.
+
+---
+
+MONEY
+
+6. ALL MONETARY VALUES ARE INTEGERS IN PENCE — NO EXCEPTIONS.
+   £2,800 is stored and computed as 280000. Never use floats for money.
+   Never store pounds. Never compute in pounds. Conversion to pounds
+   happens only at the display layer: (pence / 100).toFixed(2).
+
+7. PENCE ARITHMETIC ONLY IN THE RAE ENGINE.
+   The engine operates exclusively in pence. Display components divide
+   by 100. This boundary must never blur.
+
+8. ROUNDING IS EXPLICIT.
+   Use Math.round() for all pence-level rounding. After allocation,
+   verify: bufferContribution + Σ(debtAllocations) + investmentContribution
+   === surplus exactly. If off by 1p, add it to the final term.
+
+---
+
+SECURITY & DATA
+
+9. ROW LEVEL SECURITY ON EVERY TABLE — NO EXCEPTIONS.
+   Every Supabase table must have an RLS policy. Never generate a table
+   migration without the accompanying RLS policy in the same block.
+   Never expose data without auth.uid() gating.
+
+10. SECRETS LIVE IN .env.local — NEVER HARDCODED.
+    No API key, URL, or secret value ever appears in application code.
+    Always reference process.env.VARIABLE_NAME. If a value is needed
+    that doesn't have an environment variable yet, add a placeholder
+    and flag it with a // TODO: add to .env.local comment.
+
+11. rae_executions IS IMMUTABLE — NEVER UPDATE OR DELETE.
+    This table is an append-only FCA Consumer Duty audit log.
+    Never generate UPDATE or DELETE statements targeting it.
+    Only INSERT is permitted.
+
+12. NEVER STORE RAW TRUELAYER TOKENS IN THE DATABASE.
+    Truelayer access tokens must be held server-side or encrypted.
+    Never write a token to a Supabase column directly.
+
+---
+
+TYPESCRIPT
+
+13. STRICT MODE IS DISABLED FOR PHASE 0A — DO NOT ENABLE IT.
+    tsconfig.json has "strict": false. This is deliberate. Do not add
+    strict: true. Do not suggest enabling it.
+
+14. USE 'any' SPARINGLY AND ALWAYS FLAG IT.
+    Only use 'any' when a precise type requires excessive boilerplate.
+    Every 'any' must be accompanied by: // TODO: tighten type
+
+15. ALL FILES USE .ts OR .tsx — NEVER .js OR .jsx.
+    This is a TypeScript project throughout. Never generate plain
+    JavaScript files.
+
+---
+
+DEPENDENCIES & COMPONENTS
+
+16. shadcn/ui IS THE DEFAULT UI PRIMITIVE.
+    Always use shadcn/ui components (Card, Button, Badge, Progress, Toast,
+    etc.) before building custom components. Only build custom when
+    shadcn genuinely cannot provide what is needed.
+
+17. NEVER DEVIATE FROM THE DEFINED TECH STACK WITHOUT FLAGGING IT.
+    Stack: Next.js 14, TypeScript, Tailwind CSS, shadcn/ui, Supabase,
+    Truelayer, Recharts, Resend, Posthog. If a request would require
+    adding a package outside this list, state it explicitly and ask
+    before proceeding.
+
+---
+
+CODE QUALITY
+
+18. ALWAYS SHOW THE FULL FILE — NOT JUST THE CHANGED SECTION.
+    When modifying a file under 200 lines, show the complete updated file.
+    For files over 200 lines, show clearly marked diffs with sufficient
+    surrounding context to locate the change.
+
+19. ALWAYS STATE WHAT YOU ARE BUILDING AND WHY BEFORE THE CODE BLOCK.
+    One short paragraph before every code block explaining the purpose
+    of the file and its role in the architecture.
+
+20. ONE TASK PER COMPOSER SESSION.
+    Generate one file or one coherent feature at a time. Do not bundle
+    unrelated changes. Each output should be committable as a single
+    git commit.
+
+21. IF AMBIGUOUS, STATE YOUR ASSUMPTION AND PROCEED.
+    Do not ask multiple clarifying questions before producing output.
+    State the assumption clearly at the top of the response, then build.
+
+22. NEVER SUGGEST MONEY MOVEMENT CODE.
+    No automated sweeps, scheduled transfers, or background payment
+    execution. This prototype is read-only. The RAE recommends.
+    The user acts.
