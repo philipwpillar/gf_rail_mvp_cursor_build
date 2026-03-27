@@ -5,6 +5,7 @@ import { PipelineStage, type RAEResult } from "@/lib/rae/types";
 import { Sidebar } from "./components/sidebar";
 import { AllocationChart } from "./components/allocation-chart";
 import { DebtRoutingCard } from "./components/debt-routing-card";
+import { ProjectionsPanel } from "./components/projections-panel";
 import type { RaeApiPayload } from "@/lib/server/rae-recommendation";
 
 function formatPounds(pence: number): string {
@@ -53,6 +54,7 @@ type RaeOutputCardProps = {
 
 export function RaeOutputCard({ initialPayload, initialError }: RaeOutputCardProps) {
   const [result] = useState<RAEResult | null>(initialPayload?.result ?? null);
+  const [projections] = useState(initialPayload?.projections ?? null);
   const [context] = useState<ApiContext | null>(initialPayload?.context ?? null);
   const [error] = useState<string | null>(initialError);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
@@ -210,6 +212,14 @@ export function RaeOutputCard({ initialPayload, initialError }: RaeOutputCardPro
                     </div>
                   </div>
                 </div>
+
+                {projections ? (
+                  <ProjectionsPanel
+                    debtFreeMonth={projections.debtFreeMonth}
+                    totalInterestSavedVsMinimum={projections.totalInterestSavedVsMinimum}
+                    monthlySnapshots={projections.monthlySnapshots}
+                  />
+                ) : null}
               </div>
             ) : null}
           </div>

@@ -1,19 +1,22 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import type { ReactNode } from "react";
 
 type NavItem = {
   label: string;
   short: string;
+  href: string;
   icon: ReactNode;
-  active?: boolean;
 };
 
 const navItems: NavItem[] = [
   {
     label: "Dashboard",
     short: "D",
-    active: true,
+    href: "/dashboard",
     icon: (
       <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
         <path fill="currentColor" d="M3 3h8v8H3V3Zm10 0h8v5h-8V3ZM3 13h5v8H3v-8Zm7 0h11v8H10v-8Z" />
@@ -21,8 +24,9 @@ const navItems: NavItem[] = [
     ),
   },
   {
-    label: "Household Profile",
-    short: "H",
+    label: "Resilience",
+    short: "R",
+    href: "/dashboard/resilience",
     icon: (
       <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
         <path
@@ -33,8 +37,9 @@ const navItems: NavItem[] = [
     ),
   },
   {
-    label: "Debt Instruments",
-    short: "DI",
+    label: "Debt",
+    short: "D",
+    href: "/dashboard/debt",
     icon: (
       <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
         <path
@@ -45,8 +50,9 @@ const navItems: NavItem[] = [
     ),
   },
   {
-    label: "Plan Scenarios",
-    short: "PS",
+    label: "Ownership",
+    short: "O",
+    href: "/dashboard/ownership",
     icon: (
       <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
         <path fill="currentColor" d="M4 4h16v2H4V4Zm0 5h10v2H4V9Zm0 5h16v2H4v-2Zm0 5h10v2H4v-2Z" />
@@ -74,6 +80,15 @@ type SidebarProps = {
 };
 
 export function Sidebar({ isCollapsed, householdName, onToggle }: SidebarProps) {
+  const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleSignOut() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+  }
+
   return (
     <aside className="border-r border-zinc-200 bg-[#0f2240] text-zinc-100 transition-all duration-200">
       <div className="flex items-center justify-between border-b border-white/10 px-5 py-5">
@@ -97,26 +112,39 @@ export function Sidebar({ isCollapsed, householdName, onToggle }: SidebarProps) 
       </div>
 
       <nav className="space-y-1 px-3 py-4 text-sm">
-        {navItems.map((item) => (
-          <div
-            key={item.label}
-            className={`rounded-md px-3 py-2 ${item.active ? "bg-white/10 font-medium text-zinc-100" : "text-zinc-300"}`}
-            title={item.label}
-          >
-            <div className={`flex items-center ${isCollapsed ? "justify-center" : "gap-2"}`}>
+        {navItems.map((item) => {
+          const isActive = pathname === item.href;
+          return (
+            <Link
+              key={item.label}
+              href={item.href}
+              className={`flex items-center rounded-md px-3 py-2 ${
+                isActive ? "bg-white/10 font-medium text-zinc-100" : "text-zinc-300 hover:bg-white/5"
+              } ${isCollapsed ? "justify-center" : "gap-2"}`}
+              title={item.label}
+            >
               <span className="inline-flex items-center justify-center text-zinc-200">{item.icon}</span>
               {isCollapsed ? <span className="sr-only">{item.short}</span> : <span>{item.label}</span>}
-            </div>
-          </div>
-        ))}
+            </Link>
+          );
+        })}
       </nav>
 
-      {!isCollapsed ? (
-        <div className="mt-8 px-5 text-xs text-zinc-400">
-          <p className="font-medium uppercase tracking-wide text-zinc-300">Household</p>
-          <p className="mt-1 text-sm text-zinc-200">{householdName ?? "Loading..."}</p>
-        </div>
-      ) : null}
+      <div className="mt-8 px-5 pb-4 text-xs text-zinc-400">
+        {!isCollapsed ? (
+          <>
+            <p className="font-medium uppercase tracking-wide text-zinc-300">Household</p>
+            <p className="mt-1 text-sm text-zinc-200">{householdName ?? "Loading..."}</p>
+          </>
+        ) : null}
+        <button
+          type="button"
+          onClick={handleSignOut}
+          className="mt-4 w-full rounded-md border border-white/20 px-3 py-2 text-xs font-medium text-zinc-100 hover:bg-white/10"
+        >
+          Sign out
+        </button>
+      </div>
     </aside>
   );
 }

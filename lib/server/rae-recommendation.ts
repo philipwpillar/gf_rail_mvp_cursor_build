@@ -1,5 +1,6 @@
 import { DEFAULT_RAE_CONFIG, type DebtInstrument, type HouseholdSnapshot, type RAEResult } from "@/lib/rae/types";
 import { runRAE } from "@/lib/rae/engine";
+import { computeProjections, type ProjectionResult } from "@/lib/rae/projections";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 type HouseholdRow = {
@@ -25,6 +26,7 @@ type DebtRow = {
 
 export type RaeApiPayload = {
   result: RAEResult;
+  projections: ProjectionResult;
   context: {
     householdName: string;
     debts: {
@@ -133,6 +135,7 @@ export async function buildRaeRecommendation({
   };
 
   const result = runRAE(snapshot);
+  const projections = computeProjections(snapshot);
 
   let auditLogged = false;
   if (writeAudit) {
@@ -165,6 +168,7 @@ export async function buildRaeRecommendation({
 
   return {
     result,
+    projections,
     context: {
       householdName: household.display_name ?? "Household",
       debts: (debtRows ?? []).map((debt) => ({
