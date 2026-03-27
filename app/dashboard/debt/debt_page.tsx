@@ -3,6 +3,8 @@ import { computeProjections } from "@/lib/rae/projections";
 import type { DebtAllocation } from "@/lib/rae/types";
 import { ProjectionsPanel } from "../components/projections-panel";
 import { buildHouseholdSnapshot, type DebtSnapshotRow } from "@/lib/server/snapshot-utils";
+import { applySurplusDelta, parseSurplusDeltaCookie } from "@/lib/server/scenario";
+import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +29,8 @@ function formatPounds(pence: number): string {
 }
 
 export default async function DebtPage() {
+  const cookieStore = await cookies();
+  const surplusDeltaPence = parseSurplusDeltaCookie(cookieStore.get("rail.scenario.surplus_delta")?.value);
   const supabase = await createClient();
   const {
     data: { user },
@@ -71,7 +75,13 @@ export default async function DebtPage() {
     .maybeSingle<LatestExecution>();
 
   const debts = debtRows ?? [];
-  const snapshot = buildHouseholdSnapshot(household, debts);
+  const snapshot = buildHouseholdSnapshot(
+    {
+      ...household,
+      monthly_income: applySurplusDelta(household.monthly_income, surplusDeltaPence),
+    },
+    debts,
+  );
 
   const projections = computeProjections(snapshot);
   const allocations = latestExecution?.final_debt_allocations ?? [];

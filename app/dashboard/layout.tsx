@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { DashboardShell } from "./components/dashboard-shell";
+import { parseSurplusDeltaCookie } from "@/lib/server/scenario";
 import type { ReactNode } from "react";
 
 export const dynamic = "force-dynamic";
@@ -13,6 +14,9 @@ type DashboardLayoutProps = {
 export default async function DashboardLayout({ children }: DashboardLayoutProps) {
   const cookieStore = await cookies();
   const initialSidebarCollapsed = cookieStore.get("rail.sidebar.collapsed")?.value === "true";
+  const initialSurplusDeltaPence = parseSurplusDeltaCookie(
+    cookieStore.get("rail.scenario.surplus_delta")?.value,
+  );
 
   const supabase = await createClient();
   const {
@@ -32,7 +36,11 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
   const householdName = household?.display_name ?? "Household";
 
   return (
-    <DashboardShell householdName={householdName} initialSidebarCollapsed={initialSidebarCollapsed}>
+    <DashboardShell
+      householdName={householdName}
+      initialSidebarCollapsed={initialSidebarCollapsed}
+      initialSurplusDeltaPence={initialSurplusDeltaPence}
+    >
       {children}
     </DashboardShell>
   );

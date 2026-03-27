@@ -5,6 +5,7 @@ import {
   buildHouseholdSnapshot,
   type DebtSnapshotRow,
 } from "@/lib/server/snapshot-utils";
+import { applySurplusDelta } from "@/lib/server/scenario";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 type HouseholdRow = {
@@ -44,6 +45,7 @@ type BuildRaeRecommendationInput = {
   userId: string;
   userEmail?: string | null;
   writeAudit: boolean;
+  surplusDeltaPence?: number;
 };
 
 async function ensureHouseholdProfile(
@@ -89,6 +91,7 @@ export async function buildRaeRecommendation({
   userId,
   userEmail,
   writeAudit,
+  surplusDeltaPence = 0,
 }: BuildRaeRecommendationInput): Promise<RaeApiPayload> {
   const { household, profileBootstrapped } = await ensureHouseholdProfile(
     supabase,
@@ -104,7 +107,12 @@ export async function buildRaeRecommendation({
 
   if (debtError) throw new Error("Failed to load debt instruments.");
 
-  const snapshot: HouseholdSnapshot = buildHouseholdSnapshot(household, debtRows ?? []);
+  const scenarioAdjustedHousehold = {
+    ...household,
+    monthly_income: applySurplusDelta(household.monthly_income, surplusDeltaPence),
+  };
+
+  const snapshot: HouseholdSnapshot = buildHouseholdSnapshot(scenarioAdjustedHousehold, debtRows ?? []);
 
   const result = runRAE(snapshot);
   const projections = computeProjections(snapshot);

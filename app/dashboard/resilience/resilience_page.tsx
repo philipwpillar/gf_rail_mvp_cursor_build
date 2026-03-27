@@ -1,4 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
+import { applySurplusDelta, parseSurplusDeltaCookie } from "@/lib/server/scenario";
+import { cookies } from "next/headers";
+import { runRAE } from "@/lib/rae/engine";
+import { buildHouseholdSnapshot, type DebtSnapshotRow } from "@/lib/server/snapshot-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -7,12 +11,11 @@ type HouseholdRow = {
   buffer_balance: number;
   fixed_obligations: number;
   monthly_income: number;
+  income_volatility: number;
+  plan_commitment_score: number;
 };
 
-type DebtRow = {
-  min_payment: number;
-  is_active: boolean;
-};
+type DebtRow = DebtSnapshotRow;
 
 type LatestExecution = {
   b_min: number;
@@ -26,6 +29,8 @@ function formatPounds(pence: number): string {
 }
 
 export default async function ResiliencePage() {
+  const cookieStore = await cookies();
+  const surplusDeltaPence = parseSurplusDeltaCookie(cookieStore.get("rail.scenario.surplus_delta")?.value);
   const supabase = await createClient();
   const {
     data: { user },
@@ -41,7 +46,9 @@ export default async function ResiliencePage() {
 
   const { data: household } = await supabase
     .from("household_profiles")
-    .select("id, buffer_balance, fixed_obligations, monthly_income")
+    .select(
+      "id, buffer_balance, fixed_obligations, monthly_income, income_volatility, plan_commitment_score",
+    )
     .eq("user_id", user.id)
     .maybeSingle<HouseholdRow>();
 
@@ -55,7 +62,7 @@ export default async function ResiliencePage() {
 
   const { data: debtRows } = await supabase
     .from("debt_instruments")
-    .select("min_payment, is_active")
+    .select("id, label, lender, balance, apr, min_payment, debt_type, is_active")
     .eq("household_id", household.id)
     .returns<DebtRow[]>();
 
@@ -67,16 +74,27 @@ export default async function ResiliencePage() {
     .limit(1)
     .maybeSingle<LatestExecution>();
 
+  const adjustedMonthlyIncome = applySurplusDelta(household.monthly_income, surplusDeltaPence);
+
   const activeDebtMin = (debtRows ?? [])
     .filter((debt) => debt.is_active)
     .reduce((sum, debt) => sum + debt.min_payment, 0);
+  const snapshot = buildHouseholdSnapshot(
+    {
+      ...household,
+      monthly_income: adjustedMonthlyIncome,
+    },
+    debtRows ?? [],
+  );
+  const scenarioResult = runRAE(snapshot);
+
   const weeklyObligations = (household.fixed_obligations + activeDebtMin) / 4.33;
   const weeksCovered = weeklyObligations > 0 ? household.buffer_balance / weeklyObligations : 0;
 
   const fallbackBMin = Math.round(weeklyObligations * 3);
   const fallbackBTarget = Math.round(weeklyObligations * 6);
-  const bMin = latestExecution?.b_min ?? fallbackBMin;
-  const bTarget = latestExecution?.b_target ?? fallbackBTarget;
+  const bMin = scenarioResult.bMin || latestExecution?.b_min || fallbackBMin;
+  const bTarget = scenarioResult.bTarget || latestExecution?.b_target || fallbackBTarget;
   const currentBuffer = household.buffer_balance;
   const progress = bTarget > 0 ? Math.min(100, (currentBuffer / bTarget) * 100) : 0;
 
@@ -120,10 +138,20 @@ export default async function ResiliencePage() {
         <div className="rounded-xl border border-zinc-200 bg-white p-5">
           <p className="text-sm font-semibold text-zinc-900">This month&apos;s buffer contribution</p>
           <p className="mt-2 text-2xl font-semibold text-zinc-900">
-            {formatPounds(latestExecution?.final_buffer_contribution ?? 0)}
+            {formatPounds(
+              scenarioResult.finalAllocation.bufferContribution ||
+                latestExecution?.final_buffer_contribution ||
+                0,
+            )}
           </p>
           <p className="mt-2 text-sm text-zinc-600">
-            Rail is adding {formatPounds(latestExecution?.final_buffer_contribution ?? 0)} to your buffer this month.
+            Rail is adding{" "}
+            {formatPounds(
+              scenarioResult.finalAllocation.bufferContribution ||
+                latestExecution?.final_buffer_contribution ||
+                0,
+            )}{" "}
+            to your buffer this month.
           </p>
           {currentBuffer >= bTarget ? (
             <p className="mt-2 text-sm text-zinc-600">

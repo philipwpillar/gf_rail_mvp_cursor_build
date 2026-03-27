@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { buildRaeRecommendation } from "@/lib/server/rae-recommendation";
+import { parseSurplusDeltaCookie } from "@/lib/server/scenario";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  const cookieStore = await cookies();
+  const surplusDeltaPence = parseSurplusDeltaCookie(cookieStore.get("rail.scenario.surplus_delta")?.value);
   const supabase = await createClient();
   const {
     data: { user },
@@ -28,6 +32,7 @@ export async function GET() {
       userId: user.id,
       userEmail: user.email,
       writeAudit: true,
+      surplusDeltaPence,
     });
     return NextResponse.json(payload);
   } catch {

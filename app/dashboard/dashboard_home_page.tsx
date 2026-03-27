@@ -1,11 +1,15 @@
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { RaeOutputCard } from "./rae-output-card";
 import { buildRaeRecommendation, type RaeApiPayload } from "@/lib/server/rae-recommendation";
+import { parseSurplusDeltaCookie } from "@/lib/server/scenario";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardHomePage() {
+  const cookieStore = await cookies();
+  const surplusDeltaPence = parseSurplusDeltaCookie(cookieStore.get("rail.scenario.surplus_delta")?.value);
   const supabase = await createClient();
   const {
     data: { user },
@@ -23,6 +27,7 @@ export default async function DashboardHomePage() {
       userId: user.id,
       userEmail: user.email,
       writeAudit: true,
+      surplusDeltaPence,
     });
   } catch {
     initialError = "We could not load your recommendation just now. Please refresh.";

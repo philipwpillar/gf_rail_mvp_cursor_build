@@ -65,72 +65,91 @@ type SidebarProps = {
   isCollapsed: boolean;
   householdName?: string;
   onToggle: () => void;
+  showCollapseToggle?: boolean;
+  onNavigate?: () => void;
 };
 
-export function Sidebar({ isCollapsed, householdName, onToggle }: SidebarProps) {
+export function Sidebar({
+  isCollapsed,
+  householdName,
+  onToggle,
+  showCollapseToggle = true,
+  onNavigate,
+}: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
   async function handleSignOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
+    onNavigate?.();
     router.push("/login");
   }
 
   return (
-    <aside className="border-r border-zinc-200 bg-[#0f2240] text-zinc-100 transition-all duration-200">
-      <div className="flex items-center justify-between border-b border-white/10 px-5 py-5">
+    <aside className="flex h-full flex-col border-r border-zinc-200 bg-zinc-50 text-zinc-900 transition-all duration-200">
+      <div className="flex items-center justify-between border-b border-zinc-200 px-3 py-3">
         {!isCollapsed ? (
           <div>
-            <p className="text-lg font-semibold tracking-wide">RAIL CFO</p>
-            <p className="text-xs text-zinc-300">Household planning workspace</p>
+            <p className="text-sm font-semibold tracking-tight">Rail</p>
+            <p className="text-xs text-zinc-500">Household planner</p>
           </div>
         ) : (
-          <p className="text-lg font-semibold tracking-wide">RC</p>
+          <p className="rounded-md bg-zinc-200 px-2 py-1 text-xs font-semibold">R</p>
         )}
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-expanded={!isCollapsed}
-          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="rounded-md border border-white/20 px-2 py-1 text-xs text-zinc-200 hover:bg-white/10"
-        >
-          {isCollapsed ? ">" : "<"}
-        </button>
+        {showCollapseToggle ? (
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-expanded={!isCollapsed}
+            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className="rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-600 hover:bg-zinc-100"
+          >
+            {isCollapsed ? ">" : "<"}
+          </button>
+        ) : null}
       </div>
 
-      <nav className="space-y-1 px-3 py-4 text-sm">
+      <nav className="space-y-1 px-2 py-3 text-sm">
+        {!isCollapsed ? (
+          <p className="px-2 pb-1 text-[11px] font-medium uppercase tracking-wide text-zinc-500">Workspace</p>
+        ) : null}
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link
               key={item.label}
               href={item.href}
+              onClick={onNavigate}
               className={`flex items-center rounded-md px-3 py-2 ${
-                isActive ? "bg-white/10 font-medium text-zinc-100" : "text-zinc-300 hover:bg-white/5"
+                isActive
+                  ? "bg-zinc-900 font-medium text-white"
+                  : "text-zinc-700 hover:bg-zinc-100"
               } ${isCollapsed ? "justify-center" : "gap-2"}`}
               title={item.label}
             >
-              <span className="inline-flex items-center justify-center text-zinc-200">{item.icon}</span>
+              <span className={`inline-flex items-center justify-center ${isActive ? "text-white" : "text-zinc-500"}`}>
+                {item.icon}
+              </span>
               {isCollapsed ? <span className="sr-only">{item.short}</span> : <span>{item.label}</span>}
             </Link>
           );
         })}
       </nav>
 
-      <div className="mt-8 px-5 pb-4 text-xs text-zinc-400">
+      <div className="mt-auto border-t border-zinc-200 px-3 pb-3 pt-3 text-xs text-zinc-500">
         {!isCollapsed ? (
           <>
-            <p className="font-medium uppercase tracking-wide text-zinc-300">Household</p>
-            <p className="mt-1 text-sm text-zinc-200">{householdName ?? "Loading..."}</p>
+            <p className="font-medium uppercase tracking-wide text-zinc-500">Household</p>
+            <p className="mt-1 truncate text-sm text-zinc-800">{householdName ?? "Loading..."}</p>
           </>
         ) : null}
         <button
           type="button"
           onClick={handleSignOut}
-          className="mt-4 w-full rounded-md border border-white/20 px-3 py-2 text-xs font-medium text-zinc-100 hover:bg-white/10"
+          className="mt-3 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-100"
         >
-          Sign out
+          {isCollapsed ? "Out" : "Sign out"}
         </button>
       </div>
     </aside>
