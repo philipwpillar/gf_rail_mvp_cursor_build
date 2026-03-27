@@ -5,19 +5,22 @@ import { Sidebar } from "./sidebar";
 
 type DashboardShellProps = {
   householdName?: string;
+  initialSidebarCollapsed: boolean;
   children: React.ReactNode;
 };
 
-export function DashboardShell({ householdName, children }: DashboardShellProps) {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return window.localStorage.getItem("rail.sidebar.collapsed") === "true";
-  });
+export function DashboardShell({
+  householdName,
+  initialSidebarCollapsed,
+  children,
+}: DashboardShellProps) {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(initialSidebarCollapsed);
 
   function toggleSidebar() {
     setIsSidebarCollapsed((prev) => {
       const next = !prev;
       window.localStorage.setItem("rail.sidebar.collapsed", String(next));
+      document.cookie = `rail.sidebar.collapsed=${String(next)}; path=/; max-age=31536000; samesite=lax`;
       return next;
     });
   }

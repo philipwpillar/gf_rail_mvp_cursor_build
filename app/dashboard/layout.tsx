@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { DashboardShell } from "./components/dashboard-shell";
 import type { ReactNode } from "react";
@@ -10,6 +11,9 @@ type DashboardLayoutProps = {
 };
 
 export default async function DashboardLayout({ children }: DashboardLayoutProps) {
+  const cookieStore = await cookies();
+  const initialSidebarCollapsed = cookieStore.get("rail.sidebar.collapsed")?.value === "true";
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -27,6 +31,10 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
 
   const householdName = household?.display_name ?? "Household";
 
-  return <DashboardShell householdName={householdName}>{children}</DashboardShell>;
+  return (
+    <DashboardShell householdName={householdName} initialSidebarCollapsed={initialSidebarCollapsed}>
+      {children}
+    </DashboardShell>
+  );
 }
 

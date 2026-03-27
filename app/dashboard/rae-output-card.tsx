@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { PipelineStage, type RAEResult } from "@/lib/rae/types";
 import { AllocationChart } from "./components/allocation-chart";
 import { DebtRoutingCard } from "./components/debt-routing-card";
@@ -52,10 +51,10 @@ type RaeOutputCardProps = {
 };
 
 export function RaeOutputCard({ initialPayload, initialError }: RaeOutputCardProps) {
-  const [result] = useState<RAEResult | null>(initialPayload?.result ?? null);
-  const [projections] = useState(initialPayload?.projections ?? null);
-  const [context] = useState<ApiContext | null>(initialPayload?.context ?? null);
-  const [error] = useState<string | null>(initialError);
+  const result: RAEResult | null = initialPayload?.result ?? null;
+  const projections = initialPayload?.projections ?? null;
+  const context: ApiContext | null = initialPayload?.context ?? null;
+  const error: string | null = initialError;
 
   const chartData =
     !result
@@ -87,13 +86,11 @@ export function RaeOutputCard({ initialPayload, initialError }: RaeOutputCardPro
             </div>
 
             <div className="mt-5 border-b border-zinc-200">
-              <div className="flex flex-wrap gap-6 text-sm">
+              <div className="flex items-center justify-between gap-4 text-sm">
                 <div className="border-b-2 border-blue-500 pb-2 font-medium text-blue-600">
                   Allocation Plan
                 </div>
-                <div className="pb-2 text-zinc-500">Cash Flow View</div>
-                <div className="pb-2 text-zinc-500">Historical Trends</div>
-                <div className="pb-2 text-zinc-500">Stress Test</div>
+                <div className="pb-2 text-xs text-zinc-500">Additional views coming in Phase 0B</div>
               </div>
             </div>
 
