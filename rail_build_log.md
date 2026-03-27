@@ -1,5 +1,26 @@
 # Rail Prototype — Build Log
 
+## 2026-03-27 — Session 2 IA realignment (Option A route scaffolding)
+
+### What shipped (repo state)
+- Realigned sidebar information architecture to stage-based navigation:
+  - `Dashboard` (`/dashboard`)
+  - `Resilience` (`/dashboard/resilience`)
+  - `Debt` (`/dashboard/debt`)
+  - `Ownership` (`/dashboard/ownership`)
+- Added route-aware active highlighting in `app/dashboard/components/sidebar.tsx` using `usePathname()`.
+- Kept collapsible sidebar behavior and household footer display.
+- Added sidebar sign-out action via Supabase browser client and router redirect to `/login`.
+- Added skeleton route pages:
+  - `app/dashboard/resilience/page.tsx`
+  - `app/dashboard/debt/page.tsx`
+  - `app/dashboard/ownership/page.tsx`
+- Removed non-spec sidebar item (`Execution Log`) from the stage-based Option A nav.
+
+### Scope note
+- This session intentionally delivers route integrity and IA alignment first.
+- Deep page content (Supabase-backed cards and projections per stage page) is a follow-on pass.
+
 ## 2026-03-26 — Stage 7 dashboard UI build (scenario workspace + collapsible sidebar)
 
 ### What shipped (repo state)

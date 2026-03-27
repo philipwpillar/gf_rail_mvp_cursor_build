@@ -52,7 +52,6 @@ describe("computeProjections", () => {
     const initialSurplus = snapshot.monthlyIncome - snapshot.fixedObligations - initialMinPayments;
 
     // Month 0 (pre-projection)
-    // eslint-disable-next-line no-console
     console.log("Sarah & James - Month 0", {
       bufferBalance: snapshot.bufferBalance,
       totalDebt: initialTotalDebt,
@@ -63,7 +62,6 @@ describe("computeProjections", () => {
     // Months 1 and 2 from projections.monthlySnapshots[0] and [1]
     [0, 1].forEach((idx) => {
       const m = result.monthlySnapshots[idx];
-      // eslint-disable-next-line no-console
       console.log(`Sarah & James - Month ${m.month}`, {
         bufferBalance: m.bufferBalance,
         totalDebt: m.totalDebt,

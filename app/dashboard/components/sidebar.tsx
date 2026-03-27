@@ -59,18 +59,6 @@ const navItems: NavItem[] = [
       </svg>
     ),
   },
-  {
-    label: "Execution Log",
-    short: "EL",
-    icon: (
-      <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
-        <path
-          fill="currentColor"
-          d="M6 2h9l5 5v15H6V2Zm8 1.5V8h4.5L14 3.5ZM8 10h8v2H8v-2Zm0 4h8v2H8v-2Zm0 4h5v2H8v-2Z"
-        />
-      </svg>
-    ),
-  },
 ];
 
 type SidebarProps = {
