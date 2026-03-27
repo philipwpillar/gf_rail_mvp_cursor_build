@@ -117,8 +117,10 @@ export async function buildRaeRecommendation({
   const result = runRAE(snapshot);
   const projections = computeProjections(snapshot);
 
+  // Compliance guard: only baseline recommendations are written to immutable audit logs.
+  const shouldWriteAudit = writeAudit && surplusDeltaPence === 0;
   let auditLogged = false;
-  if (writeAudit) {
+  if (shouldWriteAudit) {
     const { error: executionError } = await supabase.from("rae_executions").insert({
       household_id: household.id,
       input_snapshot: snapshot,
