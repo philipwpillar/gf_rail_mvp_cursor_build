@@ -1,2 +1,3 @@
-export { default, dynamic } from "./dashboard_home_page";
+export const dynamic = "force-dynamic";
+export { default } from "./dashboard_home_page";
 

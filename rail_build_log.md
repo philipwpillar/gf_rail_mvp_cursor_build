@@ -1,5 +1,39 @@
 # Rail Prototype — Build Log
 
+## 2026-03-27 — Session 3 stage page implementation + routing cleanup
+
+### What shipped (repo state)
+- Implemented full stage pages with live Supabase-backed content:
+  - `app/dashboard/resilience/resilience_page.tsx`
+  - `app/dashboard/debt/debt_page.tsx`
+  - `app/dashboard/ownership/ownership_page.tsx`
+- Added route-wrapper pattern for unique module naming while preserving App Router conventions:
+  - `page.tsx` files now delegate to uniquely named `*_page.tsx` implementations.
+- Added shared dashboard shell component:
+  - `app/dashboard/components/dashboard-shell.tsx`
+  - Sidebar collapse behavior moved to shell-level so all `/dashboard/*` pages share one layout frame.
+- Added shared snapshot utility for mapping household/debt rows to `HouseholdSnapshot`:
+  - `lib/server/snapshot-utils.ts`
+  - Reduced duplicate mapping logic across recommendation and stage pages.
+- Added shadcn foundation artifacts copied from scaffold repo (no overwrite):
+  - `components.json`
+  - `components/ui/button.tsx`
+  - `components/theme-provider.tsx`
+  - `lib/utils.ts`
+  - Installed required supporting dependencies in `package.json`.
+
+### Route and data hotfixes
+- Fixed Next.js route config export issue:
+  - Route wrappers now export `dynamic` directly and only re-export `default`.
+- Restored per-user household scoping on stage pages:
+  - Re-added `getUser()` + `.eq("user_id", user.id)` in stage page data queries.
+
+### Validation
+- `npm run lint` passes.
+- `npm run test` passes.
+- `npx tsc --noEmit` passes.
+- `npm run build` passes.
+
 ## 2026-03-27 — Session 2 IA realignment (Option A route scaffolding)
 
 ### What shipped (repo state)

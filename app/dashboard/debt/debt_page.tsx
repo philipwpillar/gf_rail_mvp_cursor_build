@@ -28,10 +28,22 @@ function formatPounds(pence: number): string {
 
 export default async function DebtPage() {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return (
+      <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">
+        Unauthorized
+      </div>
+    );
+  }
 
   const { data: household } = await supabase
     .from("household_profiles")
     .select("id, monthly_income, income_volatility, fixed_obligations, buffer_balance, plan_commitment_score")
+    .eq("user_id", user.id)
     .maybeSingle<HouseholdRow>();
 
   if (!household) {

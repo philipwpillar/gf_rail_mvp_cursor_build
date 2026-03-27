@@ -27,10 +27,22 @@ function formatPounds(pence: number): string {
 
 export default async function ResiliencePage() {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return (
+      <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">
+        Unauthorized
+      </div>
+    );
+  }
 
   const { data: household } = await supabase
     .from("household_profiles")
     .select("id, buffer_balance, fixed_obligations, monthly_income")
+    .eq("user_id", user.id)
     .maybeSingle<HouseholdRow>();
 
   if (!household) {

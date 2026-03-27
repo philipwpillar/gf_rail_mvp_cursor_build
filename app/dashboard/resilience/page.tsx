@@ -1,2 +1,3 @@
-export { default, dynamic } from "./resilience_page";
+export const dynamic = "force-dynamic";
+export { default } from "./resilience_page";
 
