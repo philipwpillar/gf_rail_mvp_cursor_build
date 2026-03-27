@@ -115,10 +115,10 @@ export function DashboardShell({
                 className="w-full"
                 aria-label="Monthly surplus scenario adjustment"
               />
-              <div className="mt-2 flex items-center justify-between text-xs text-zinc-500">
-                <span>-£300.00</span>
-                <span>£0.00</span>
-                <span>+£500.00</span>
+              <div className="relative mt-2 h-4 text-xs text-zinc-500">
+                <span className="absolute left-0">-£300.00</span>
+                <span className="absolute left-[37.5%] -translate-x-1/2">£0.00</span>
+                <span className="absolute right-0">+£500.00</span>
               </div>
             </div>
             <div className="mt-3 flex gap-2">
