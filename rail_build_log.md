@@ -1,5 +1,28 @@
 # Rail Prototype — Build Log
 
+## 2026-03-28 — Vercel production deployment (Hobby)
+
+### Deployment details
+- **Platform**: Vercel (Hobby plan).
+- **Live URL**: [https://gf-rail-mvp-cursor-build.vercel.app](https://gf-rail-mvp-cursor-build.vercel.app)
+- **Source**: GitHub repo `philipwpillar/gf_rail_mvp_cursor_build`, `main` branch.
+- **Auto-deploy**: Active — every push to `main` triggers a new production deployment automatically.
+
+### Vercel environment variables (Production)
+Configured in the Vercel dashboard:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+### Supabase Auth configuration
+Updated for production hosting:
+- **Site URL**: `https://gf-rail-mvp-cursor-build.vercel.app`
+- **Redirect URLs**: Include `https://gf-rail-mvp-cursor-build.vercel.app/**`
+
+### Status
+- Build passes cleanly on Vercel.
+- Login page renders correctly at the live URL.
+- Post-deploy smoke test in progress.
+
 ## 2026-03-27 — Session 3 stage page implementation + routing cleanup
 
 ### What shipped (repo state)
