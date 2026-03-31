@@ -5,8 +5,7 @@ import { createClient as createSupabaseServiceClient } from "@supabase/supabase-
 export const dynamic = "force-dynamic";
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const MODEL_CHAIN = [
-  "qwen/qwen3-next-80b-a3b-instruct:free",
-  "google/gemini-flash-1.5",
+  "meta-llama/llama-3.3-70b-instruct:free",
   "meta-llama/llama-3.1-8b-instruct:free",
   "mistralai/mistral-7b-instruct:free",
   "qwen/qwen2.5-7b-instruct:free",
