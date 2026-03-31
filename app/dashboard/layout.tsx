@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { DashboardShell } from "./components/dashboard-shell";
 import { parseSurplusDeltaCookie } from "@/lib/server/scenario";
+import { AdvisorButton } from "@/components/advisor/AdvisorButton";
 import type { ReactNode } from "react";
 
 export const dynamic = "force-dynamic";
@@ -29,11 +30,12 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
 
   const { data: household } = await supabase
     .from("household_profiles")
-    .select("display_name")
+    .select("id, display_name")
     .eq("user_id", user.id)
-    .maybeSingle<{ display_name: string | null }>();
+    .maybeSingle<{ id: string; display_name: string | null }>();
 
   const householdName = household?.display_name ?? "Household";
+  const householdId = household?.id;
 
   return (
     <DashboardShell
@@ -42,6 +44,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
       initialSurplusDeltaPence={initialSurplusDeltaPence}
     >
       {children}
+      {householdId ? <AdvisorButton householdId={householdId} householdName={householdName} /> : null}
     </DashboardShell>
   );
 }
