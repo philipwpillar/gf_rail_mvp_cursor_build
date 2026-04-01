@@ -3,11 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "./sidebar";
+import { RailTopBar } from "./rail-top-bar";
+import { PipelineStage } from "@/lib/rae/types";
 
 type DashboardShellProps = {
   householdName?: string;
   initialSidebarCollapsed: boolean;
   initialSurplusDeltaPence: number;
+  topBarStage?: PipelineStage | null;
+  topBarSurplus?: number | null;
   children: React.ReactNode;
 };
 
@@ -15,6 +19,8 @@ export function DashboardShell({
   householdName,
   initialSidebarCollapsed,
   initialSurplusDeltaPence,
+  topBarStage,
+  topBarSurplus,
   children,
 }: DashboardShellProps) {
   const router = useRouter();
@@ -66,9 +72,14 @@ export function DashboardShell({
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white flex flex-col">
+      <RailTopBar
+        householdName={householdName ?? "Household"}
+        stage={topBarStage ?? null}
+        surplus={topBarSurplus ?? null}
+      />
       <div
-        className={`min-h-screen lg:grid ${isSidebarCollapsed ? "lg:grid-cols-[76px_1fr]" : "lg:grid-cols-[272px_1fr]"}`}
+        className={`flex-1 lg:grid ${isSidebarCollapsed ? "lg:grid-cols-[76px_1fr]" : "lg:grid-cols-[272px_1fr]"}`}
       >
         <div className="hidden lg:block lg:h-screen lg:overflow-y-auto">
           <Sidebar isCollapsed={isSidebarCollapsed} onToggle={toggleSidebar} householdName={householdName} />
