@@ -118,11 +118,11 @@ export function computeBaseAllocation(
 
     allocation.debtAllocations.push({
       debtId: highestAprDebt.id,
-      amount: surplus * 0.7,
+      amount: Math.round(surplus * 0.7),
     });
     allocation.debtAllocations.push({
       debtId: smallestBalanceDebt.id,
-      amount: surplus * 0.3,
+      amount: Math.round(surplus * 0.3),
     });
     roundAndReconcile(allocation, surplus, "debt");
     return allocation;
