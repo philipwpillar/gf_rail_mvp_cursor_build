@@ -9,12 +9,13 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { MonthlySnapshot } from "@/lib/rae/projections";
+import type { MinimumOnlyMonthlySnapshot, MonthlySnapshot } from "@/lib/rae/projections";
 
 type ProjectionsPanelProps = {
   debtFreeMonth: number | null;
   totalInterestSavedVsMinimum: number;
   monthlySnapshots: MonthlySnapshot[];
+  minimumOnlySnapshots?: MinimumOnlyMonthlySnapshot[];
 };
 
 function formatPounds(pence: number): string {
@@ -25,10 +26,20 @@ export function ProjectionsPanel({
   debtFreeMonth,
   totalInterestSavedVsMinimum,
   monthlySnapshots,
+  minimumOnlySnapshots = [],
 }: ProjectionsPanelProps) {
-  const chartData = monthlySnapshots.map((snapshot) => ({
+  const railData = monthlySnapshots.map((snapshot) => ({
     month: snapshot.month,
     totalDebtPounds: snapshot.totalDebt / 100,
+  }));
+  const minimumData = minimumOnlySnapshots.map((snapshot) => ({
+    month: snapshot.month,
+    minimumDebtPounds: snapshot.totalDebt / 100,
+  }));
+  const chartData = Array.from({ length: 60 }, (_, i) => ({
+    month: i + 1,
+    ...railData[i],
+    ...minimumData[i],
   }));
   const projectedInvestment = monthlySnapshots[59]?.investmentValue ?? 0;
 
@@ -80,10 +91,29 @@ export function ProjectionsPanel({
               isAnimationActive={false}
               name="With Rail"
             />
+            <Line
+              type="monotone"
+              dataKey="minimumDebtPounds"
+              stroke="#e11d48"
+              strokeWidth={2}
+              strokeDasharray="4 2"
+              dot={false}
+              isAnimationActive={false}
+              name="Minimums only"
+            />
           </LineChart>
         </ResponsiveContainer>
       </div>
-      {/* TODO: Add minimum-only baseline debt trajectory line in Phase 0B. */}
+      <div className="mt-2 flex items-center gap-4 text-xs text-zinc-600">
+        <div className="flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-full bg-violet-500" aria-hidden="true" />
+          <span>With Rail</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-4 border-t-2 border-dashed border-rose-600" aria-hidden="true" />
+          <span>Minimums only</span>
+        </div>
+      </div>
     </div>
   );
 }

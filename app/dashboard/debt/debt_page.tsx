@@ -1,10 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
-import { computeProjections } from "@/lib/rae/projections";
 import type { DebtAllocation } from "@/lib/rae/types";
-import { ProjectionsPanel } from "../components/projections-panel";
 import { buildHouseholdSnapshot, type DebtSnapshotRow } from "@/lib/server/snapshot-utils";
 import { applySurplusDelta, parseSurplusDeltaCookie } from "@/lib/server/scenario";
 import { cookies } from "next/headers";
+import { DebtProjectionPanel } from "./debt_projection_panel";
 
 export const dynamic = "force-dynamic";
 
@@ -83,13 +82,8 @@ export default async function DebtPage() {
     debts,
   );
 
-  const projections = computeProjections(snapshot);
   const allocations = latestExecution?.final_debt_allocations ?? [];
   const allocationByDebtId = new Map(allocations.map((allocation) => [allocation.debtId, allocation.amount]));
-  const strategy =
-    household.plan_commitment_score >= 0.6
-      ? "Avalanche"
-      : "Blended (70% avalanche / 30% snowball)";
 
   return (
     <div className="space-y-4">
@@ -124,34 +118,7 @@ export default async function DebtPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-zinc-200 bg-white p-5">
-        <p className="text-sm font-semibold text-zinc-900">Payoff projection</p>
-        <p className="mt-2 text-sm text-zinc-700">
-          Debt free in{" "}
-          {projections.debtFreeMonth === null
-            ? "more than 60 months"
-            : projections.debtFreeMonth === 0
-              ? "Month 0 (already clear)"
-              : `Month ${projections.debtFreeMonth}`}
-          . Interest saved vs minimums only: {formatPounds(projections.totalInterestSavedVsMinimum)}.
-        </p>
-        <div className="mt-4">
-          <ProjectionsPanel
-            debtFreeMonth={projections.debtFreeMonth}
-            totalInterestSavedVsMinimum={projections.totalInterestSavedVsMinimum}
-            monthlySnapshots={projections.monthlySnapshots}
-          />
-        </div>
-      </div>
-
-      <div className="rounded-xl border border-zinc-200 bg-white p-5">
-        <p className="text-sm font-semibold text-zinc-900">Strategy</p>
-        <p className="mt-2 text-sm text-zinc-700">{strategy}</p>
-        <p className="mt-1 text-sm text-zinc-600">
-          Rail uses the mathematically optimal sequence. As your follow-through score improves, strategy locks to
-          pure avalanche.
-        </p>
-      </div>
+      <DebtProjectionPanel snapshot={snapshot} allocations={allocations} debts={debts} />
     </div>
   );
 }

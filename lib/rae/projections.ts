@@ -9,11 +9,17 @@ export interface MonthlySnapshot {
   surplusAllocated: number;
 }
 
+export interface MinimumOnlyMonthlySnapshot {
+  month: number;
+  totalDebt: number;
+}
+
 export interface ProjectionResult {
   debtFreeMonth: number | null;
   totalInterestPaid: number;
   totalInterestSavedVsMinimum: number;
   monthlySnapshots: MonthlySnapshot[];
+  minimumOnlySnapshots: MinimumOnlyMonthlySnapshot[];
 }
 
 const PROJECTION_MONTHS = 60;
@@ -59,9 +65,13 @@ function applyMonthToDebt(
   };
 }
 
-function computeMinimumOnlyInterest(snapshot: HouseholdSnapshot): number {
+function computeMinimumOnlyInterest(snapshot: HouseholdSnapshot): {
+  totalInterest: number;
+  monthlySnapshots: MinimumOnlyMonthlySnapshot[];
+} {
   let baseline = cloneSnapshot(snapshot);
   let totalInterest = 0;
+  const monthlySnapshots: MinimumOnlyMonthlySnapshot[] = [];
 
   for (let month = 1; month <= PROJECTION_MONTHS; month += 1) {
     const nextDebts = baseline.debts.map((debt) => {
@@ -69,10 +79,15 @@ function computeMinimumOnlyInterest(snapshot: HouseholdSnapshot): number {
       totalInterest += interestPaid;
       return nextDebt;
     });
+    const totalDebt = totalDebtBalance(nextDebts);
+    monthlySnapshots.push({
+      month,
+      totalDebt,
+    });
     baseline = { ...baseline, debts: nextDebts };
   }
 
-  return totalInterest;
+  return { totalInterest, monthlySnapshots };
 }
 
 export function computeProjections(snapshot: HouseholdSnapshot): ProjectionResult {
@@ -124,11 +139,13 @@ export function computeProjections(snapshot: HouseholdSnapshot): ProjectionResul
     };
   }
 
-  const baselineInterest = computeMinimumOnlyInterest(snapshot);
+  const { totalInterest: baselineInterest, monthlySnapshots: minimumOnlySnapshots } =
+    computeMinimumOnlyInterest(snapshot);
   return {
     debtFreeMonth,
     totalInterestPaid,
     totalInterestSavedVsMinimum: baselineInterest - totalInterestPaid,
     monthlySnapshots,
+    minimumOnlySnapshots,
   };
 }
