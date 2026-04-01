@@ -191,6 +191,7 @@ export function RaeOutputCard({ initialPayload, initialError }: RaeOutputCardPro
                     debtFreeMonth={projections.debtFreeMonth}
                     totalInterestSavedVsMinimum={projections.totalInterestSavedVsMinimum}
                     monthlySnapshots={projections.monthlySnapshots}
+                    minimumOnlySnapshots={projections.minimumOnlySnapshots}
                   />
                 ) : null}
               </div>
