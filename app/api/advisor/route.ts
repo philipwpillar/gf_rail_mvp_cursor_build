@@ -27,54 +27,67 @@ type AdvisorRequestBody = {
   householdId?: string;
 };
 
+type HouseholdProfileRow = {
+  id: string;
+  user_id: string;
+  display_name: string | null;
+  monthly_income: number;
+  income_volatility: number;
+  fixed_obligations: number;
+  buffer_balance: number;
+  plan_commitment_score: number;
+};
+
+type DebtInstrumentRow = {
+  id: string;
+  label: string | null;
+  lender: string | null;
+  balance: number;
+  apr: number;
+  min_payment: number;
+  debt_type: string | null;
+  is_active: boolean;
+};
+
 type LatestExecutionRow = {
+  executed_at: string;
   surplus: number | null;
   stage: string | null;
   b_target: number | null;
-  input_snapshot: unknown;
+  b_min: number | null;
+  base_buffer_contribution: number | null;
+  base_investment_contribution: number | null;
+  final_buffer_contribution: number | null;
+  final_investment_contribution: number | null;
+  rationale: unknown;
 };
 
-function toPounds(pence: number | null | undefined): string {
-  const amount = typeof pence === "number" ? pence : 0;
-  return `£${(amount / 100).toFixed(2)}`;
-}
-
-function buildSystemPrompt(householdName: string, execution: LatestExecutionRow): string {
-  const snapshot =
-    execution.input_snapshot && typeof execution.input_snapshot === "object"
-      ? (execution.input_snapshot as Record<string, unknown>)
-      : {};
-  const monthlyIncomePence = Number(snapshot.monthlyIncome ?? 0);
-  const bufferBalancePence = Number(snapshot.bufferBalance ?? 0);
-  const debts = Array.isArray(snapshot.debts) ? (snapshot.debts as unknown[]) : [];
-
-  const debtLines = debts
-    .map((debt, idx: number) => {
-      const debtItem = debt && typeof debt === "object" ? (debt as Record<string, unknown>) : {};
-      const label = String(debtItem.label ?? debtItem.id ?? `Debt ${idx + 1}`);
-      const balancePence = Number(debtItem.balance ?? 0);
-      const apr = Number(debtItem.apr ?? 0);
-      const minPaymentPence = Number(debtItem.minPayment ?? 0);
-      return `- ${label}: balance ${toPounds(balancePence)}, APR ${(apr * 100).toFixed(1)}%, minimum ${toPounds(minPaymentPence)}`;
-    })
-    .join("\n");
+function buildSystemPromptPreamble(context: {
+  household: HouseholdProfileRow;
+  debts: DebtInstrumentRow[];
+  latestExecution: LatestExecutionRow | null;
+}): string {
+  const serialized = JSON.stringify(
+    {
+      household_profile: context.household,
+      active_debt_instruments: context.debts,
+      latest_rae_execution: context.latestExecution,
+      currency: "GBP",
+      amounts_are_in: "pence",
+    },
+    null,
+    2,
+  );
 
   return [
-    "You are Rail Advisor, an informational assistant for a UK personal-finance prototype.",
-    "Provide plain-English explanations only. Be concise, practical, and clear.",
-    "Do not provide regulated financial advice, legal advice, or promises of outcomes.",
-    "If user asks for actions outside provided data, say what is unknown.",
+    "You are the Rail Advisor.",
+    "Here is the household's current financial position (authoritative data).",
     "",
-    `Household: ${householdName}`,
-    `RAE stage: ${execution.stage ?? "Unknown"}`,
-    `Monthly income: ${toPounds(monthlyIncomePence)}`,
-    `Monthly surplus: ${toPounds(execution.surplus)}`,
-    `Current buffer balance: ${toPounds(bufferBalancePence)}`,
-    `Buffer target: ${toPounds(execution.b_target)}`,
-    "Debts:",
-    debtLines || "- None listed",
+    serialized,
     "",
-    "Always remind briefly: information only, not regulated financial advice.",
+    "Answer questions based on this data only.",
+    "If something is not present in the data, say you don't know and ask for the missing detail.",
+    "This is not regulated financial advice.",
   ].join("\n");
 }
 
@@ -152,15 +165,18 @@ export async function POST(request: Request) {
   if (!householdId) {
     return NextResponse.json({ error: "householdId is required" }, { status: 400 });
   }
+
   const {
     data: household,
     error: householdError,
   } = await supabase
     .from("household_profiles")
-    .select("id, display_name")
+    .select(
+      "id, user_id, display_name, monthly_income, income_volatility, fixed_obligations, buffer_balance, plan_commitment_score",
+    )
     .eq("id", householdId)
     .eq("user_id", user.id)
-    .maybeSingle<{ id: string; display_name: string | null }>();
+    .maybeSingle<HouseholdProfileRow>();
 
   if (householdError) {
     return NextResponse.json({ error: "Failed to load household context." }, { status: 500 });
@@ -170,13 +186,27 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Household not found" }, { status: 404 });
   }
 
+  const { data: activeDebts, error: debtError } = await supabase
+    .from("debt_instruments")
+    .select("id, label, lender, balance, apr, min_payment, debt_type, is_active")
+    .eq("household_id", household.id)
+    .eq("is_active", true)
+    .order("apr", { ascending: false })
+    .returns<DebtInstrumentRow[]>();
+
+  if (debtError) {
+    return NextResponse.json({ error: "Failed to load active debt instruments." }, { status: 500 });
+  }
+
   const {
     data: latestExecution,
     error: latestExecutionError,
   } = await supabase
     .from("rae_executions")
-    .select("surplus, stage, b_target, input_snapshot")
-    .eq("household_id", householdId)
+    .select(
+      "executed_at, surplus, stage, b_target, b_min, base_buffer_contribution, base_investment_contribution, final_buffer_contribution, final_investment_contribution, rationale",
+    )
+    .eq("household_id", household.id)
     .order("executed_at", { ascending: false })
     .limit(1)
     .maybeSingle<LatestExecutionRow>();
@@ -185,17 +215,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Failed to load latest RAE execution." }, { status: 500 });
   }
 
-  if (!latestExecution) {
-    return NextResponse.json({ error: "No RAE execution found for this household" }, { status: 404 });
-  }
-
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: "Missing OPENROUTER_API_KEY" }, { status: 500 });
   }
 
   const requestMessages: AdvisorMessage[] = [
-    { role: "system", content: buildSystemPrompt(household.display_name ?? "Household", latestExecution) },
+    {
+      role: "system",
+      content: buildSystemPromptPreamble({
+        household,
+        debts: activeDebts ?? [],
+        latestExecution: latestExecution ?? null,
+      }),
+    },
     ...messages,
   ];
   const upstream = await callOpenRouterWithFallback({
