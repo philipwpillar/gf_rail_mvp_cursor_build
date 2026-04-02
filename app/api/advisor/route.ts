@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
-import { createClient as createSupabaseServiceClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -135,7 +134,12 @@ export async function POST(request: Request) {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser();
+
+  if (userError) {
+    return NextResponse.json({ error: "Failed to verify authenticated user." }, { status: 500 });
+  }
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -148,35 +152,38 @@ export async function POST(request: Request) {
   if (!householdId) {
     return NextResponse.json({ error: "householdId is required" }, { status: 400 });
   }
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!supabaseUrl || !serviceRoleKey) {
-    return NextResponse.json({ error: "Missing Supabase server configuration" }, { status: 500 });
-  }
-
-  const serviceClient = createSupabaseServiceClient(supabaseUrl, serviceRoleKey, {
-    auth: { persistSession: false },
-  });
-
-  const { data: household } = await serviceClient
+  const {
+    data: household,
+    error: householdError,
+  } = await supabase
     .from("household_profiles")
     .select("id, display_name")
     .eq("id", householdId)
     .eq("user_id", user.id)
     .maybeSingle<{ id: string; display_name: string | null }>();
 
+  if (householdError) {
+    return NextResponse.json({ error: "Failed to load household context." }, { status: 500 });
+  }
+
   if (!household) {
     return NextResponse.json({ error: "Household not found" }, { status: 404 });
   }
 
-  const { data: latestExecution } = await serviceClient
+  const {
+    data: latestExecution,
+    error: latestExecutionError,
+  } = await supabase
     .from("rae_executions")
     .select("surplus, stage, b_target, input_snapshot")
     .eq("household_id", householdId)
     .order("executed_at", { ascending: false })
     .limit(1)
     .maybeSingle<LatestExecutionRow>();
+
+  if (latestExecutionError) {
+    return NextResponse.json({ error: "Failed to load latest RAE execution." }, { status: 500 });
+  }
 
   if (!latestExecution) {
     return NextResponse.json({ error: "No RAE execution found for this household" }, { status: 404 });
