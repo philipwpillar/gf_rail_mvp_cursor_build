@@ -3,6 +3,7 @@ import { computeProjections } from "@/lib/rae/projections";
 import { PipelineStage } from "@/lib/rae/types";
 import { buildHouseholdSnapshot, type DebtSnapshotRow } from "@/lib/server/snapshot-utils";
 import { applySurplusDelta, parseSurplusDeltaCookie } from "@/lib/server/scenario";
+import { OwnershipClient } from "@/components/ownership/OwnershipClient";
 import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
@@ -83,9 +84,9 @@ export default async function OwnershipPage() {
   );
 
   const projections = computeProjections(snapshot);
-  const projectedPot = projections.monthlySnapshots[59]?.investmentValue ?? 0;
   const stage = latestExecution?.stage;
   const isOwnershipActive = stage === PipelineStage.STAGE_3_OWNERSHIP;
+  const monthlyContributionPence = latestExecution?.final_investment_contribution ?? 0;
 
   return (
     <div className="space-y-4">
@@ -117,14 +118,7 @@ export default async function OwnershipPage() {
         )}
       </div>
 
-      <div className="rounded-xl border border-zinc-200 bg-white p-5">
-        <p className="text-sm font-semibold text-zinc-900">Projected pot in 5 years</p>
-        <p className="mt-2 text-2xl font-semibold text-zinc-900">{formatPounds(projectedPot)}</p>
-        {/* TODO: Phase 0B — add compound growth at 7% p.a. nominal. Currently simple accumulation only. */}
-        <p className="mt-2 text-sm text-zinc-600">
-          Index funds only. No active management. Low fees. Long time horizon.
-        </p>
-      </div>
+      <OwnershipClient monthlyContributionPence={monthlyContributionPence} />
     </div>
   );
 }
