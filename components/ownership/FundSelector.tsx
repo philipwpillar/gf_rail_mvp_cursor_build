@@ -2,8 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Info } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -17,7 +15,7 @@ const FUND_NARRATIVES: Record<string, string> = {
   "global-40":
     "A cautious foundation. 40% global equities provide growth exposure while 60% bonds anchor stability. Suitable if you're prioritising capital preservation alongside modest long-term growth. At 0.2% OCF, this is among the lowest-cost cautious funds available in the UK.",
   "global-60":
-    "The balanced default. 60% global equities, 40% bonds — broad diversification across 30,000+ holdings with a single fund. This is Rail's default recommendation for households at the Ownership stage: enough growth to beat inflation meaningfully over 10+ years, with bond ballast to smooth volatility.",
+    "The balanced default. 60% global equities, 40% bonds — broad diversification across 30,000+ holdings with a single fund. This is Rail's default recommended investment fund for households at the Ownership stage: enough growth to beat inflation meaningfully over 10+ years, with bond ballast to smooth volatility.",
   "global-80":
     "Growth-oriented. 80% global equities means higher expected returns over a long horizon, with correspondingly more short-term volatility. Suitable if your timeline is 15+ years and you've demonstrated the behavioural discipline to hold through market downturns. Your Rail plan commitment score supports this.",
 };
@@ -28,21 +26,18 @@ const FUND_CARDS = [
     title: "LifeStrategy® Global 40% Equity Fund",
     risk: "Risk 4/7",
     ocf: "0.2% OCF",
-    recommended: false,
   },
   {
     key: "global-60",
     title: "LifeStrategy® Global 60% Equity Fund",
     risk: "Risk 4/7",
     ocf: "0.2% OCF",
-    recommended: true,
   },
   {
     key: "global-80",
     title: "LifeStrategy® Global 80% Equity Fund",
     risk: "Risk 5/7",
     ocf: "0.2% OCF",
-    recommended: false,
   },
 ] as const;
 
@@ -69,12 +64,12 @@ function FundCardWithPopover({
 
   useEffect(() => () => clearCloseTimer(), []);
 
-  const handleTriggerMouseEnter = () => {
+  const handleInfoMouseEnter = () => {
     clearCloseTimer();
     setOpen(true);
   };
 
-  const handleTriggerMouseLeave = () => {
+  const handleInfoMouseLeave = () => {
     clearCloseTimer();
     closeTimerRef.current = setTimeout(() => setOpen(false), HOVER_CLOSE_DELAY_MS);
   };
@@ -93,55 +88,70 @@ function FundCardWithPopover({
   const narrative = FUND_NARRATIVES[fund.key as any] ?? "";
 
   return (
-    <Popover
-      open={open}
-      onOpenChange={(next) => {
-        if (!next) {
-          clearCloseTimer();
-          setOpen(false);
-        }
-      }}
-      modal={false}
-    >
-      <PopoverTrigger asChild>
-        <Button
+    <div className="relative w-full">
+      <Popover
+        open={open}
+        onOpenChange={(next) => {
+          if (!next) {
+            clearCloseTimer();
+            setOpen(false);
+          }
+        }}
+        modal={false}
+      >
+        <button
           type="button"
-          variant="ghost"
           onClick={() => onSelect(fund.key)}
-          onMouseEnter={handleTriggerMouseEnter}
-          onMouseLeave={handleTriggerMouseLeave}
-          className="h-auto p-0 text-left hover:bg-transparent"
           aria-pressed={isActive}
+          className={cn(
+            "w-full rounded-xl text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+          )}
         >
-          <Card className={cn("w-full border-zinc-200", isActive ? "border-2 border-primary" : "border")}>
-            <CardHeader className="space-y-2">
-              <div className="flex items-start justify-between gap-2">
-                <CardTitle className="min-w-0 flex-1 text-sm">{fund.title}</CardTitle>
-                <div className="flex shrink-0 items-center gap-1.5">
-                  {fund.recommended ? <Badge variant="secondary">Recommended</Badge> : null}
-                  <Info className="size-4 shrink-0 text-zinc-500" aria-hidden />
-                </div>
-              </div>
+          <Card
+            className={cn(
+              "pointer-events-none w-full border-zinc-200",
+              isActive ? "border-2 border-primary" : "border",
+            )}
+          >
+            <CardHeader className="space-y-2 pr-11">
+              <CardTitle className="text-sm">{fund.title}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-1 text-sm text-zinc-600">
               <p>{fund.risk}</p>
               <p>{fund.ocf}</p>
             </CardContent>
           </Card>
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        side="bottom"
-        align="center"
-        className="max-w-[320px] w-[min(320px,calc(100vw-2rem))]"
-        onMouseEnter={handleContentMouseEnter}
-        onMouseLeave={handleContentMouseLeave}
-        onOpenAutoFocus={(e) => e.preventDefault()}
-      >
-        <p className="text-sm font-semibold text-zinc-900">{fund.title}</p>
-        <p className="text-sm text-zinc-700">{narrative}</p>
-      </PopoverContent>
-    </Popover>
+        </button>
+
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            className="absolute right-2 top-2 z-10 inline-flex size-9 items-center justify-center rounded-md text-zinc-500 outline-none hover:bg-zinc-100 hover:text-zinc-800 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            aria-label={`More information about ${fund.title}`}
+            onMouseEnter={handleInfoMouseEnter}
+            onMouseLeave={handleInfoMouseLeave}
+            onClick={(e) => e.preventDefault()}
+          >
+            <Info className="size-4 shrink-0" aria-hidden />
+          </button>
+        </PopoverTrigger>
+
+        <PopoverContent
+          side="bottom"
+          align="end"
+          sideOffset={6}
+          className={cn(
+            "max-w-lg w-[min(32rem,calc(100vw-2rem))] gap-3 border border-zinc-200 bg-white p-5 text-zinc-900 shadow-xl ring-0",
+          )}
+          onMouseEnter={handleContentMouseEnter}
+          onMouseLeave={handleContentMouseLeave}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
+          <p className="text-base font-semibold leading-snug text-zinc-900">{fund.title}</p>
+          <p className="text-sm leading-relaxed text-zinc-800">{narrative}</p>
+        </PopoverContent>
+      </Popover>
+    </div>
   );
 }
 
