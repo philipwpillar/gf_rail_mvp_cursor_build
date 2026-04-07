@@ -119,7 +119,10 @@ export function DebtProjectionPanel({ snapshot, allocations, debts }: DebtProjec
             : projections.debtFreeMonth === 0
               ? "Month 0 (already clear)"
               : `Month ${projections.debtFreeMonth}`}
-          . Interest saved vs minimums only: {formatPounds(projections.totalInterestSavedVsMinimum)}.
+          .{" "}
+          {projections.totalInterestSavedVsMinimum > 0
+            ? `Interest saved vs minimums only: ${formatPounds(projections.totalInterestSavedVsMinimum)}.`
+            : "Rail is prioritising index fund investment over accelerated loan repayment — interest saved on debt is £0 by design."}
         </p>
 
         <div className="mt-4">
