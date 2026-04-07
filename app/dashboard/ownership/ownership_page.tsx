@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { computeProjections } from "@/lib/rae/projections";
+import { runRAE } from "@/lib/rae/engine";
 import { PipelineStage } from "@/lib/rae/types";
 import { buildHouseholdSnapshot, type DebtSnapshotRow } from "@/lib/server/snapshot-utils";
 import { applySurplusDelta, parseSurplusDeltaCookie } from "@/lib/server/scenario";
@@ -82,11 +83,11 @@ export default async function OwnershipPage() {
     },
     debts,
   );
+  const liveResult = runRAE(snapshot);
 
   const projections = computeProjections(snapshot);
-  const stage = latestExecution?.stage;
-  const isOwnershipActive = stage === PipelineStage.STAGE_3_OWNERSHIP;
-  const monthlyContributionPence = latestExecution?.final_investment_contribution ?? 0;
+  const isOwnershipActive = liveResult.stage === PipelineStage.STAGE_3_OWNERSHIP;
+  const monthlyContributionPence = liveResult.finalAllocation.investmentContribution;
 
   return (
     <div className="space-y-4">
