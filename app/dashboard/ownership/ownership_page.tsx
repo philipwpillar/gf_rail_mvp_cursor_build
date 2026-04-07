@@ -91,9 +91,9 @@ export default async function OwnershipPage() {
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-zinc-200 bg-white p-5">
-        <h2 className="text-2xl font-semibold tracking-tight">Ownership</h2>
+        <h2 className="type-h1">Ownership</h2>
         {!isOwnershipActive ? (
-          <div className="mt-3 space-y-2 text-sm text-zinc-700">
+          <div className="mt-3 space-y-2 type-body text-zinc-700">
             <p className="font-medium">Not yet active</p>
             <p>Once your buffer is funded and high-rate debt is cleared, your surplus flows here.</p>
             <p>
@@ -107,7 +107,7 @@ export default async function OwnershipPage() {
             </p>
           </div>
         ) : (
-          <div className="mt-3 space-y-2 text-sm text-zinc-700">
+          <div className="mt-3 space-y-2 type-body text-zinc-700">
             <p className="font-medium">
               Investing {formatPounds(latestExecution?.final_investment_contribution ?? 0)} this month
             </p>

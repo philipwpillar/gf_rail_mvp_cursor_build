@@ -24,3 +24,43 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.type-h1 {
+  @apply text-2xl font-semibold tracking-tight;
+}
+
+.type-h2 {
+  @apply text-xl font-semibold;
+}
+
+.type-section-title {
+  @apply text-sm font-semibold;
+}
+
+.type-body {
+  @apply text-sm;
+}
+
+.type-body-strong {
+  @apply text-sm font-medium;
+}
+
+.type-caption {
+  @apply text-xs;
+}
+
+.type-label {
+  @apply text-xs font-medium uppercase tracking-wide;
+}
+
+.type-form-label {
+  @apply text-sm font-medium;
+}
+
+.type-button {
+  @apply text-sm font-medium;
+}
+
+.type-button-xs {
+  @apply text-xs font-medium;
+}

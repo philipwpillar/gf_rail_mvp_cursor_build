@@ -73,8 +73,8 @@ export function RaeOutputCard({ initialPayload, initialError }: RaeOutputCardPro
     <div className="rounded-xl border border-zinc-200 bg-white p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="text-2xl font-semibold tracking-tight">Household Plan Scenario</h2>
-                <p className="mt-1 text-sm text-zinc-600">
+                <h2 className="type-h1">Household Plan Scenario</h2>
+                <p className="mt-1 type-body text-zinc-600">
                   Server-preloaded recommendation generated from pure <code>runRAE</code>.
                 </p>
               </div>
@@ -90,12 +90,12 @@ export function RaeOutputCard({ initialPayload, initialError }: RaeOutputCardPro
                 <div className="border-b-2 border-blue-500 pb-2 font-medium text-blue-600">
                   Allocation Plan
                 </div>
-                <div className="pb-2 text-xs text-zinc-500">Additional views coming in Phase 0B</div>
+                <div className="pb-2 type-caption text-zinc-500">Additional views coming in Phase 0B</div>
               </div>
             </div>
 
             {error ? (
-              <div className="mt-6 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              <div className="mt-6 rounded-md border border-red-200 bg-red-50 px-3 py-2 type-body text-red-700">
                 {error}
               </div>
             ) : null}
@@ -103,7 +103,7 @@ export function RaeOutputCard({ initialPayload, initialError }: RaeOutputCardPro
             {!error && result ? (
               <div className="mt-6 space-y-5">
                 {initialPayload?.meta.profileBootstrapped ? (
-                  <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-800">
+                  <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 type-body text-blue-800">
                     We initialized your household profile with starter values. Add your real income,
                     obligations, and debts to receive a personalized recommendation.
                   </div>
@@ -111,17 +111,17 @@ export function RaeOutputCard({ initialPayload, initialError }: RaeOutputCardPro
 
                 <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
                   <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
-                    <p className="text-xs uppercase tracking-wide text-zinc-500">Monthly Surplus</p>
+                    <p className="type-label text-zinc-500">Monthly Surplus</p>
                     <p className="mt-2 text-3xl font-semibold text-zinc-900">
                       {formatPounds(result.surplus)}
                     </p>
                   </div>
                   <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
-                    <p className="text-xs uppercase tracking-wide text-zinc-500">Current Buffer Floor</p>
+                    <p className="type-label text-zinc-500">Current Buffer Floor</p>
                     <p className="mt-2 text-3xl font-semibold text-zinc-900">{formatPounds(result.bMin)}</p>
                   </div>
                   <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
-                    <p className="text-xs uppercase tracking-wide text-zinc-500">Target Buffer</p>
+                    <p className="type-label text-zinc-500">Target Buffer</p>
                     <p className="mt-2 text-3xl font-semibold text-zinc-900">
                       {formatPounds(result.bTarget)}
                     </p>
@@ -129,7 +129,7 @@ export function RaeOutputCard({ initialPayload, initialError }: RaeOutputCardPro
                 </div>
 
                 <div className="rounded-xl border border-zinc-200 bg-white p-4">
-                  <p className="text-sm font-semibold text-zinc-900">Income Allocation Plan (This Month)</p>
+                  <p className="type-section-title text-zinc-900">Income Allocation Plan (This Month)</p>
                   <div className="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                       <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
@@ -163,8 +163,8 @@ export function RaeOutputCard({ initialPayload, initialError }: RaeOutputCardPro
                   />
 
                   <div className="rounded-xl border border-zinc-200 bg-white p-4">
-                    <p className="text-sm font-semibold text-zinc-900">Risk & Rationale</p>
-                    <div className="mt-3 space-y-2 text-sm text-zinc-700">
+                    <p className="type-section-title text-zinc-900">Risk & Rationale</p>
+                    <div className="mt-3 space-y-2 type-body text-zinc-700">
                       <p>
                         <span className="font-medium">Shock adjustment:</span>{" "}
                         {result.shockApplied ? "Applied" : "Not applied"}

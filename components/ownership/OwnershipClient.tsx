@@ -44,11 +44,11 @@ export function OwnershipClient({ monthlyContributionPence }: OwnershipClientPro
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-semibold">{selectedFund.label} Projection</CardTitle>
+          <CardTitle className="type-section-title">{selectedFund.label} Projection</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <ProjectionChart data={projectionData} lineColour={selectedFund.colour} />
-          <p className="text-xs text-zinc-600">
+          <p className="type-caption text-zinc-600">
             Illustrative only. Assumes consistent monthly contribution and stated annual return net of 0.2% OCF. Past
             performance is not a reliable indicator of future results.
           </p>

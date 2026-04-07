@@ -109,24 +109,24 @@ export default async function ResiliencePage() {
     <div className="space-y-4">
       <div className="rounded-xl border border-zinc-200 bg-white p-5">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-2xl font-semibold tracking-tight">Resilience</h2>
+          <h2 className="type-h1">Resilience</h2>
           <span className={`rounded-full px-3 py-1 text-xs font-semibold ${status.tone}`}>{status.label}</span>
         </div>
 
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
-            <p className="text-xs uppercase tracking-wide text-zinc-500">Current buffer</p>
+            <p className="type-label text-zinc-500">Current buffer</p>
             <p className="mt-2 text-3xl font-semibold text-zinc-900">{formatPounds(currentBuffer)}</p>
-            <p className="mt-2 text-sm text-zinc-600">
+            <p className="mt-2 type-body text-zinc-600">
               Your safety net covers {weeksCovered.toFixed(1)} weeks of essential expenses.
             </p>
           </div>
           <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
-            <p className="text-xs uppercase tracking-wide text-zinc-500">Buffer progress</p>
+            <p className="type-label text-zinc-500">Buffer progress</p>
             <div className="mt-3 h-3 w-full overflow-hidden rounded-full bg-zinc-200">
               <div className="h-full bg-blue-500" style={{ width: `${progress}%` }} />
             </div>
-            <div className="mt-2 flex justify-between text-xs text-zinc-600">
+            <div className="mt-2 flex justify-between type-caption text-zinc-600">
               <span>B_min {formatPounds(bMin)}</span>
               <span>B_target {formatPounds(bTarget)}</span>
             </div>
@@ -136,7 +136,7 @@ export default async function ResiliencePage() {
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="rounded-xl border border-zinc-200 bg-white p-5">
-          <p className="text-sm font-semibold text-zinc-900">This month&apos;s buffer contribution</p>
+          <p className="type-section-title text-zinc-900">This month&apos;s buffer contribution</p>
           <p className="mt-2 text-2xl font-semibold text-zinc-900">
             {formatPounds(
               scenarioResult.finalAllocation.bufferContribution ||
@@ -144,7 +144,7 @@ export default async function ResiliencePage() {
                 0,
             )}
           </p>
-          <p className="mt-2 text-sm text-zinc-600">
+          <p className="mt-2 type-body text-zinc-600">
             Rail is adding{" "}
             {formatPounds(
               scenarioResult.finalAllocation.bufferContribution ||
@@ -154,15 +154,15 @@ export default async function ResiliencePage() {
             to your buffer this month.
           </p>
           {currentBuffer >= bTarget ? (
-            <p className="mt-2 text-sm text-zinc-600">
+            <p className="mt-2 type-body text-zinc-600">
               Your buffer is fully funded. Surplus is now redirected to debt elimination.
             </p>
           ) : null}
         </div>
 
         <div className="rounded-xl border border-zinc-200 bg-white p-5">
-          <p className="text-sm font-semibold text-zinc-900">What your buffer covers</p>
-          <p className="mt-2 text-sm text-zinc-600">
+          <p className="type-section-title text-zinc-900">What your buffer covers</p>
+          <p className="mt-2 type-body text-zinc-600">
             At your current obligations of {formatPounds(Math.round(weeklyObligations))}/week, your buffer covers{" "}
             {weeksCovered.toFixed(1)} weeks.
           </p>

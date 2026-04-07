@@ -143,8 +143,8 @@ export function AdvisorPanel({ householdId, householdName, isOpen, onOpenChange 
       <div className="flex h-full flex-col">
         <div className="flex items-center justify-between border-b border-zinc-200 p-4">
           <div>
-            <p className="text-sm font-semibold text-zinc-900">Rail Advisor</p>
-            <p className="text-xs text-zinc-600">{householdName}</p>
+            <p className="type-section-title text-zinc-900">Rail Advisor</p>
+            <p className="type-caption text-zinc-600">{householdName}</p>
           </div>
           <Button
             variant="ghost"
@@ -157,7 +157,7 @@ export function AdvisorPanel({ householdId, householdName, isOpen, onOpenChange 
         </div>
 
         {showDisclosure ? (
-          <div className="m-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+          <div className="m-3 rounded-md border border-amber-200 bg-amber-50 p-3 type-caption text-amber-900">
             <p>
               Rail Advisor provides financial information to help you understand your plan. It does not provide
               regulated financial advice.
@@ -170,7 +170,7 @@ export function AdvisorPanel({ householdId, householdName, isOpen, onOpenChange 
 
         <div className="flex-1 space-y-3 overflow-y-auto p-4">
           {messages.length === 0 ? (
-            <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-600">
+            <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3 type-body text-zinc-600">
               Ask about your latest RAE output and what each part means in plain English.
             </div>
           ) : null}
@@ -178,7 +178,7 @@ export function AdvisorPanel({ householdId, householdName, isOpen, onOpenChange 
           {messages.map((message, index) => (
             <div key={`${message.role}-${index}`} className={message.role === "user" ? "flex justify-end" : "flex"}>
               <div
-                className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
+                className={`max-w-[85%] rounded-lg px-3 py-2 type-body ${
                   message.role === "user" ? "bg-blue-600 text-white" : "bg-muted text-zinc-900"
                 }`}
               >

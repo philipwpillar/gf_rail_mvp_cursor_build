@@ -40,20 +40,20 @@ export default function LoginPage() {
   return (
     <div className="flex flex-1 items-center justify-center px-6 py-12">
       <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
-        <p className="mt-2 text-sm text-zinc-600">
+        <h1 className="type-h1">Sign in</h1>
+        <p className="mt-2 type-body text-zinc-600">
           Use your email and password to access the dashboard.
         </p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           <div className="space-y-1">
-            <label className="text-sm font-medium" htmlFor="email">
+            <label className="type-form-label" htmlFor="email">
               Email
             </label>
             <input
               id="email"
               type="email"
-              className="h-10 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm outline-none focus:border-zinc-400"
+              className="h-10 w-full rounded-md border border-zinc-200 bg-white px-3 type-body outline-none focus:border-zinc-400"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -62,13 +62,13 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm font-medium" htmlFor="password">
+            <label className="type-form-label" htmlFor="password">
               Password
             </label>
             <input
               id="password"
               type="password"
-              className="h-10 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm outline-none focus:border-zinc-400"
+              className="h-10 w-full rounded-md border border-zinc-200 bg-white px-3 type-body outline-none focus:border-zinc-400"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -77,7 +77,7 @@ export default function LoginPage() {
           </div>
 
           {error ? (
-            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 type-body text-red-700">
               {error}
             </div>
           ) : null}
@@ -85,13 +85,13 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="h-10 w-full rounded-md bg-black px-4 text-sm font-medium text-white disabled:opacity-50"
+            className="h-10 w-full rounded-md bg-black px-4 type-button text-white disabled:opacity-50"
           >
             {isLoading ? "Signing in…" : "Sign in"}
           </button>
         </form>
 
-        <p className="mt-6 text-sm text-zinc-600">
+        <p className="mt-6 type-body text-zinc-600">
           Don’t have an account?{" "}
           <a className="font-medium text-black underline" href="/signup">
             Create one

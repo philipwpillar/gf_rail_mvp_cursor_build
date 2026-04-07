@@ -116,7 +116,7 @@ function FundCardWithPopover({
             <CardHeader className="space-y-2 pr-11">
               <CardTitle className="text-sm">{fund.title}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-1 text-sm text-zinc-600">
+            <CardContent className="space-y-1 type-body text-zinc-600">
               <p>{fund.risk}</p>
               <p>{fund.ocf}</p>
             </CardContent>
@@ -148,7 +148,7 @@ function FundCardWithPopover({
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
           <p className="text-base font-semibold leading-snug text-zinc-900">{fund.title}</p>
-          <p className="text-sm leading-relaxed text-zinc-800">{narrative}</p>
+          <p className="type-body leading-relaxed text-zinc-800">{narrative}</p>
         </PopoverContent>
       </Popover>
     </div>

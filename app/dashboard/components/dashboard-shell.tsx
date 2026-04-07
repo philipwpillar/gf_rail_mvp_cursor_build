@@ -90,21 +90,21 @@ export function DashboardShell({
               type="button"
               onClick={openMobileSidebar}
               aria-label="Open menu"
-              className="inline-flex items-center gap-2 rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
+              className="inline-flex items-center gap-2 rounded-md border border-zinc-300 bg-white px-3 py-2 type-button text-zinc-700 hover:bg-zinc-100"
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
                 <path fill="currentColor" d="M4 6h16v2H4V6Zm0 5h16v2H4v-2Zm0 5h16v2H4v-2Z" />
               </svg>
               Menu
             </button>
-            <p className="text-sm font-semibold tracking-tight text-zinc-800">Rail</p>
+            <p className="type-section-title tracking-tight text-zinc-800">Rail</p>
           </div>
 
           <div className="rounded-xl border border-zinc-200 bg-white p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-semibold text-zinc-900">Scenario control</p>
-                <p className="text-xs text-zinc-600">
+                <p className="type-section-title text-zinc-900">Scenario control</p>
+                <p className="type-caption text-zinc-600">
                   Adjust monthly surplus to preview how recommendations shift.
                 </p>
               </div>
@@ -136,14 +136,14 @@ export function DashboardShell({
               <button
                 type="button"
                 onClick={applyScenario}
-                className="rounded-md bg-black px-3 py-2 text-xs font-medium text-white"
+                className="rounded-md bg-black px-3 py-2 type-button-xs text-white"
               >
                 Apply scenario
               </button>
               <button
                 type="button"
                 onClick={resetScenario}
-                className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-xs font-medium text-zinc-700"
+                className="rounded-md border border-zinc-300 bg-white px-3 py-2 type-button-xs text-zinc-700"
               >
                 Reset
               </button>

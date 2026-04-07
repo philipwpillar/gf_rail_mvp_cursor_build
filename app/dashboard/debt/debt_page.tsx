@@ -88,11 +88,11 @@ export default async function DebtPage() {
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-zinc-200 bg-white p-5">
-        <h2 className="text-2xl font-semibold tracking-tight">Debt</h2>
-        <p className="mt-2 text-sm text-zinc-600">Active debt stack in avalanche order with current Rail routing.</p>
+        <h2 className="type-h1">Debt</h2>
+        <p className="mt-2 type-body text-zinc-600">Active debt stack in avalanche order with current Rail routing.</p>
         <div className="mt-4 space-y-3">
           {debts.length === 0 ? (
-            <p className="text-sm text-zinc-600">No active debts.</p>
+            <p className="type-body text-zinc-600">No active debts.</p>
           ) : (
             debts.map((debt, index) => (
               <div key={debt.id} className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
@@ -106,7 +106,7 @@ export default async function DebtPage() {
                     </span>
                   ) : null}
                 </div>
-                <div className="mt-2 grid grid-cols-2 gap-2 text-sm text-zinc-700 md:grid-cols-4">
+                <div className="mt-2 grid grid-cols-2 gap-2 type-body text-zinc-700 md:grid-cols-4">
                   <p>Balance: {formatPounds(debt.balance)}</p>
                   <p>APR: {(debt.apr * 100).toFixed(1)}%</p>
                   <p>Minimum: {formatPounds(debt.min_payment)}</p>

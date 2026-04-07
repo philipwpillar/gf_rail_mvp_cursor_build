@@ -45,11 +45,11 @@ export function ProjectionsPanel({
 
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-4">
-      <p className="text-sm font-semibold text-zinc-900">Five-Year Projection</p>
+      <p className="type-section-title text-zinc-900">Five-Year Projection</p>
 
       <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3">
-          <p className="text-xs uppercase tracking-wide text-zinc-500">Debt free</p>
+          <p className="type-label text-zinc-500">Debt free</p>
           <p className="mt-2 text-xl font-semibold text-zinc-900">
             {debtFreeMonth === null
               ? "Not in 60 months"
@@ -59,13 +59,13 @@ export function ProjectionsPanel({
           </p>
         </div>
         <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3">
-          <p className="text-xs uppercase tracking-wide text-zinc-500">Interest saved</p>
+          <p className="type-label text-zinc-500">Interest saved</p>
           <p className="mt-2 text-xl font-semibold text-zinc-900">
             {formatPounds(totalInterestSavedVsMinimum)}
           </p>
         </div>
         <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3">
-          <p className="text-xs uppercase tracking-wide text-zinc-500">Investment pot</p>
+          <p className="type-label text-zinc-500">Investment pot</p>
           <p className="mt-2 text-xl font-semibold text-zinc-900">
             {formatPounds(projectedInvestment)}
           </p>
@@ -104,7 +104,7 @@ export function ProjectionsPanel({
           </LineChart>
         </ResponsiveContainer>
       </div>
-      <div className="mt-2 flex items-center gap-4 text-xs text-zinc-600">
+      <div className="mt-2 flex items-center gap-4 type-caption text-zinc-600">
         <div className="flex items-center gap-2">
           <span className="h-2.5 w-2.5 rounded-full bg-violet-500" aria-hidden="true" />
           <span>With Rail</span>

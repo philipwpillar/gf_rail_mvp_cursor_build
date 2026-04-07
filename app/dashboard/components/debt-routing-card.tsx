@@ -17,7 +17,7 @@ type DebtRoutingCardProps = {
 export function DebtRoutingCard({ allocations, debts, formatPounds }: DebtRoutingCardProps) {
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-4">
-      <p className="text-sm font-semibold text-zinc-900">Debt Priority Routing</p>
+      <p className="type-section-title text-zinc-900">Debt Priority Routing</p>
       <div className="mt-3 space-y-2 text-sm">
         {allocations.length === 0 ? (
           <p className="text-zinc-500">No debt routing this cycle.</p>
