@@ -204,7 +204,7 @@ export function OnboardingPage() {
         if (debtError) throw new Error("Failed to save debt instruments.");
       }
 
-      router.push("/connect");
+      router.push("/dashboard");
     } catch (err) {
       setErrors(
         err instanceof Error ? err.message : "Something went wrong. Please try again.",
