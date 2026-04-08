@@ -50,6 +50,10 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
     .eq("user_id", user.id)
     .maybeSingle<HouseholdRow>();
 
+  if (!household) {
+    redirect("/onboarding");
+  }
+
   const { data: debtRows } = household
     ? await supabase
         .from("debt_instruments")
