@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { ReactNode } from "react";
 
@@ -91,8 +92,16 @@ export function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   async function handleSignOut() {
+    setIsSigningOut(true);
+    try {
+      await fetch("/api/session/end", { method: "POST" });
+    } catch {
+      // Non-blocking — if this fails, proceed to sign out anyway.
+    }
+
     const supabase = createClient();
     await supabase.auth.signOut();
     onNavigate?.();
@@ -160,9 +169,10 @@ export function Sidebar({
         <button
           type="button"
           onClick={handleSignOut}
+          disabled={isSigningOut}
           className="mt-3 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 type-button-xs text-zinc-700 hover:bg-zinc-100"
         >
-          {isCollapsed ? "Out" : "Sign out"}
+          {isCollapsed ? (isSigningOut ? "..." : "Out") : isSigningOut ? "Signing out..." : "Sign out"}
         </button>
       </div>
     </aside>

@@ -1,0 +1,110 @@
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+
+export const dynamic = "force-dynamic";
+
+type HouseholdRow = {
+  id: string;
+  display_name: string | null;
+  monthly_income: number;
+  fixed_obligations: number;
+  buffer_balance: number;
+  plan_commitment_score: number;
+};
+
+type DebtRow = {
+  id: string;
+  label: string | null;
+  debt_type: string;
+  balance: number;
+  apr: number;
+  min_payment: number;
+  is_active: boolean;
+};
+
+export async function POST() {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { data: household } = await supabase
+      .from("household_profiles")
+      .select(
+        "id, display_name, monthly_income, fixed_obligations, buffer_balance, plan_commitment_score",
+      )
+      .eq("user_id", user.id)
+      .maybeSingle<HouseholdRow>();
+
+    if (!household) {
+      return NextResponse.json({ ok: true });
+    }
+
+    const { data: debts } = await supabase
+      .from("debt_instruments")
+      .select("id, label, debt_type, balance, apr, min_payment, is_active")
+      .eq("household_id", household.id)
+      .returns<DebtRow[]>();
+
+    const { count: raeExecutionCount } = await supabase
+      .from("rae_executions")
+      .select("id", { count: "exact", head: true })
+      .eq("household_id", household.id);
+
+    const { error: auditInsertError } = await supabase.from("session_audit_log").insert({
+      user_id: user.id,
+      email: user.email ?? null,
+      session_end_at: new Date().toISOString(),
+      household_snapshot: household,
+      debts_snapshot: debts ?? [],
+      rae_execution_count: raeExecutionCount ?? 0,
+    });
+
+    if (auditInsertError) {
+      console.error("Failed to insert session audit log", auditInsertError);
+    }
+
+    let hasDeleteFailure = false;
+
+    const { error: deleteRaeError } = await supabase
+      .from("rae_executions")
+      .delete()
+      .eq("household_id", household.id);
+    if (deleteRaeError) {
+      hasDeleteFailure = true;
+      console.error("Failed to delete rae_executions", deleteRaeError);
+    }
+
+    const { error: deleteDebtError } = await supabase
+      .from("debt_instruments")
+      .delete()
+      .eq("household_id", household.id);
+    if (deleteDebtError) {
+      hasDeleteFailure = true;
+      console.error("Failed to delete debt_instruments", deleteDebtError);
+    }
+
+    const { error: deleteHouseholdError } = await supabase
+      .from("household_profiles")
+      .delete()
+      .eq("user_id", user.id);
+    if (deleteHouseholdError) {
+      hasDeleteFailure = true;
+      console.error("Failed to delete household_profiles", deleteHouseholdError);
+    }
+
+    if (hasDeleteFailure) {
+      return NextResponse.json({ ok: true, warning: "partial_delete" });
+    }
+
+    return NextResponse.json({ ok: true }, { status: 200 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+  }
+}
