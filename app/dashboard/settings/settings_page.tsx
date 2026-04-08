@@ -108,7 +108,7 @@ export function SettingsPage({ initialHousehold, initialDebts }: SettingsPagePro
         setErrors("Please enter a valid balance (greater than £0) for each debt.");
         return;
       }
-      if (!isPositiveNumber(debt.aprStr) || parseFloat(debt.aprStr) > 100) {
+      if (!isNonNegativeNumber(debt.aprStr) || parseFloat(debt.aprStr) > 100) {
         setErrors("Please enter a valid APR between 0 and 100% for each debt.");
         return;
       }
@@ -133,11 +133,14 @@ export function SettingsPage({ initialHousehold, initialDebts }: SettingsPagePro
       const fixedObligations = poundsStringToPence(form.fixedObligationsStr);
       const bufferBalance = poundsStringToPence(form.bufferBalanceStr);
 
-      const { data: existing } = await supabase
+      const { data: existing, error: existingError } = await supabase
         .from("household_profiles")
         .select("id")
         .eq("user_id", user.id)
         .maybeSingle();
+      if (existingError) {
+        throw new Error("Failed to load household profile.");
+      }
 
       let householdId: string;
 

@@ -30,13 +30,16 @@ export default async function SettingsRoute() {
 
   if (!user) redirect("/login");
 
-  const { data: household } = await supabase
+  const { data: household, error: householdError } = await supabase
     .from("household_profiles")
     .select("id, display_name, monthly_income, fixed_obligations, buffer_balance")
     .eq("user_id", user.id)
     .maybeSingle<HouseholdRow>();
+  if (householdError) {
+    throw new Error("Failed to load household profile.");
+  }
 
-  const { data: debtRows } = household
+  const { data: debtRows, error: debtRowsError } = household
     ? await supabase
         .from("debt_instruments")
         .select("id, label, debt_type, balance, apr, min_payment, is_active")
@@ -44,7 +47,10 @@ export default async function SettingsRoute() {
         .eq("is_active", true)
         .order("apr", { ascending: false })
         .returns<DebtRow[]>()
-    : { data: [] as DebtRow[] };
+    : { data: [] as DebtRow[], error: null };
+  if (debtRowsError) {
+    throw new Error("Failed to load debt instruments.");
+  }
 
   const initialHousehold: HouseholdFormData = household
     ? {

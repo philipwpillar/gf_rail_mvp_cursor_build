@@ -47,6 +47,7 @@ function stageLabel(stage: PipelineStage): string {
 
 export function PlanDocument({ payload }: PlanDocumentProps) {
   const now = new Date();
+  const activeDebts = payload.context.debts.filter((debt) => debt.isActive);
   const debtTotal = payload.result.finalAllocation.debtAllocations.reduce(
     (sum, allocation) => sum + allocation.amount,
     0,
@@ -99,10 +100,10 @@ export function PlanDocument({ payload }: PlanDocumentProps) {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Debt Stack</Text>
-          {payload.context.debts.length === 0 ? (
+          {activeDebts.length === 0 ? (
             <Text>No active debts recorded.</Text>
           ) : (
-            payload.context.debts.map((debt) => {
+            activeDebts.map((debt) => {
               const monthlyAllocation =
                 payload.result.finalAllocation.debtAllocations.find(
                   (allocation) => allocation.debtId === debt.id,
