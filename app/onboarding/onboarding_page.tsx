@@ -382,7 +382,7 @@ export function OnboardingPage() {
 
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   <div className="space-y-1">
-                    <label className="type-form-label">Balance (GBP)</label>
+                    <label className="type-form-label">Balance (£)</label>
                     <input
                       type="number"
                       min="0"
@@ -407,7 +407,7 @@ export function OnboardingPage() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="type-form-label">Min payment (GBP/mo)</label>
+                    <label className="type-form-label">Min payment (£/mo)</label>
                     <input
                       type="number"
                       min="0"
