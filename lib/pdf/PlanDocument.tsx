@@ -45,6 +45,19 @@ function stageLabel(stage: PipelineStage): string {
   return "Stage 3 - Building Ownership";
 }
 
+function projectedInvestmentValue(
+  monthlyContributionPence: number,
+  existingInvestmentPence: number,
+  months: number,
+  annualRateNominal = 0.07,
+): number {
+  const r = annualRateNominal / 12;
+  if (r === 0) return existingInvestmentPence + monthlyContributionPence * months;
+  const fvContributions = monthlyContributionPence * ((Math.pow(1 + r, months) - 1) / r);
+  const fvExisting = existingInvestmentPence * Math.pow(1 + r, months);
+  return Math.round(fvContributions + fvExisting);
+}
+
 export function PlanDocument({ payload }: PlanDocumentProps) {
   const now = new Date();
   const activeDebts = payload.context.debts.filter((debt) => debt.isActive);
@@ -56,7 +69,18 @@ export function PlanDocument({ payload }: PlanDocumentProps) {
     payload.projections.debtFreeMonth === null
       ? "Not debt-free inside 60 months"
       : `${payload.projections.debtFreeMonth} months`;
-  const month60Snapshot = payload.projections.monthlySnapshots[59];
+  const monthlyInvestmentContribution = payload.result.finalAllocation.investmentContribution;
+  const existingInvestmentValue = payload.projections.monthlySnapshots[0]?.investmentValue ?? 0;
+  const value10yr = projectedInvestmentValue(
+    monthlyInvestmentContribution,
+    existingInvestmentValue,
+    120,
+  );
+  const value20yr = projectedInvestmentValue(
+    monthlyInvestmentContribution,
+    existingInvestmentValue,
+    240,
+  );
 
   return (
     <Document>
@@ -123,7 +147,10 @@ export function PlanDocument({ payload }: PlanDocumentProps) {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Projection Highlights</Text>
+          <Text style={styles.sectionTitle}>Ownership Projection</Text>
+          <Text style={{ ...styles.label, fontSize: 9 }}>
+            Assumes 7% nominal annual growth. For illustration only.
+          </Text>
           <View style={styles.row}>
             <Text style={styles.label}>Debt-free timeline</Text>
             <Text>{debtFreeMonthText}</Text>
@@ -133,8 +160,12 @@ export function PlanDocument({ payload }: PlanDocumentProps) {
             <Text>{formatPounds(payload.projections.totalInterestSavedVsMinimum)}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>Investment pot at month 60</Text>
-            <Text>{formatPounds(Math.round(month60Snapshot?.investmentValue ?? 0))}</Text>
+            <Text style={styles.label}>Projected investment value (10 yrs)</Text>
+            <Text>{formatPounds(value10yr)}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Projected investment value (20 yrs)</Text>
+            <Text>{formatPounds(value20yr)}</Text>
           </View>
         </View>
 
