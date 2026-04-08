@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { PipelineStage, type RAEResult } from "@/lib/rae/types";
 import { AllocationChart } from "./components/allocation-chart";
 import { DebtRoutingCard } from "./components/debt-routing-card";
@@ -51,10 +52,41 @@ type RaeOutputCardProps = {
 };
 
 export function RaeOutputCard({ initialPayload, initialError }: RaeOutputCardProps) {
+  const [isDownloadingPlan, setIsDownloadingPlan] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
   const result: RAEResult | null = initialPayload?.result ?? null;
   const projections = initialPayload?.projections ?? null;
   const context: ApiContext | null = initialPayload?.context ?? null;
   const error: string | null = initialError;
+
+  async function handleDownloadPlan() {
+    setDownloadError(null);
+    setIsDownloadingPlan(true);
+    try {
+      const response = await fetch("/api/plan-pdf", { method: "GET" });
+      if (!response.ok) {
+        throw new Error("Failed to generate plan PDF. Please try again.");
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "rail-plan-summary.pdf";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (downloadErr) {
+      setDownloadError(
+        downloadErr instanceof Error
+          ? downloadErr.message
+          : "Failed to generate plan PDF. Please try again.",
+      );
+    } finally {
+      setIsDownloadingPlan(false);
+    }
+  }
 
   const chartData =
     !result
@@ -85,6 +117,17 @@ export function RaeOutputCard({ initialPayload, initialError }: RaeOutputCardPro
               ) : null}
             </div>
 
+            <div className="mt-3">
+              <button
+                type="button"
+                onClick={() => void handleDownloadPlan()}
+                disabled={isDownloadingPlan || !result}
+                className="h-9 rounded-md border border-zinc-200 bg-white px-4 type-button text-zinc-700 disabled:opacity-50"
+              >
+                {isDownloadingPlan ? "Preparing PDF..." : "Download Plan"}
+              </button>
+            </div>
+
             <div className="mt-5 border-b border-zinc-200">
               <div className="flex items-center justify-between gap-4 text-sm">
                 <div className="border-b-2 border-blue-500 pb-2 font-medium text-blue-600">
@@ -97,6 +140,11 @@ export function RaeOutputCard({ initialPayload, initialError }: RaeOutputCardPro
             {error ? (
               <div className="mt-6 rounded-md border border-red-200 bg-red-50 px-3 py-2 type-body text-red-700">
                 {error}
+              </div>
+            ) : null}
+            {downloadError ? (
+              <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 type-body text-red-700">
+                {downloadError}
               </div>
             ) : null}
 
