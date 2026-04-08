@@ -91,13 +91,16 @@ The app:
 - Shock-aware allocation adjustment for elevated income-shock risk.
 - Debt routing with APR-priority behavior.
 - Projection simulation (up to 60 months) including debt-free month and interest savings estimate.
+- User-owned onboarding flow at `/onboarding` that writes/updates `household_profiles` and `debt_instruments`.
+- Dashboard guard: users without a household profile are redirected to onboarding.
+- Sign-out data lifecycle: snapshot to `session_audit_log` then RLS-governed hard delete of working rows.
+- PDF export endpoint with projection-oriented plan summary output.
 - Dashboard IA split into dedicated pages:
   - `Dashboard`
   - `Resilience`
   - `Debt`
   - `Ownership`
 - Sidebar collapse state persisted across sessions.
-- Optional seed script for repeatable demo households.
 
 ## Tech Stack
 
@@ -126,7 +129,10 @@ Design principle: pure engine logic is isolated from persistence and request con
 ```text
 app/
   api/rae/route.ts                 # Recommendation API endpoint
+  api/session/end/route.ts         # Snapshot + working-data purge before sign-out
+  api/export/pdf/route.ts          # Plan PDF generation endpoint
   dashboard/                       # Dashboard and stage pages
+  onboarding/                      # Household/debt onboarding flow
   login/                           # Login route and page
   signup/                          # Signup route and page
 lib/
@@ -173,15 +179,11 @@ Routing behavior:
 - `/` redirects to `/login` when unauthenticated.
 - `/dashboard/*` is protected and requires auth.
 
-## Seed Data (Optional)
+## Seed Data (Deprecated)
 
-To load synthetic demo users/households/debts:
-
-```bash
-npm run seed
-```
-
-The seed script is idempotent for existing users/profiles with matching identifiers and labels.
+Seeded synthetic households are no longer part of the main product flow.
+Current behavior is user-owned data captured during onboarding and scoped by `auth.uid()` under RLS.
+If a legacy seed script exists locally, treat it as migration/debug-only and do not use it for standard demos.
 
 ## Running Tests and Quality Checks
 
@@ -203,12 +205,31 @@ Authenticated endpoint that returns a recommendation payload:
 - `context` (household/debt metadata for rendering)
 - `meta`:
   - `auditLogged`
-  - `profileBootstrapped`
 
 Errors:
 
 - `401` when user is unauthenticated.
 - `500` for internal failures (generic message returned to client).
+
+### `POST /api/session/end`
+
+Authenticated endpoint used immediately before client sign-out:
+
+1. Reads household + debts for the current user.
+2. Writes a snapshot row to `session_audit_log`.
+3. Deletes working rows from `rae_executions`, `debt_instruments`, and `household_profiles` (RLS constrained).
+
+Response behavior:
+
+- `200` with `{ ok: true }` on success.
+- `200` with `{ ok: true, warning: "partial_delete" }` when one or more delete steps fail.
+- `401` when unauthenticated.
+- `500` on unexpected server errors.
+
+### `POST /api/export/pdf`
+
+Authenticated endpoint that returns a generated plan PDF using `@react-pdf/renderer`.
+The output includes household snapshot, allocation detail, debt projection signals, and ownership projection values.
 
 ## RAE Decision Model
 
@@ -236,6 +257,7 @@ The app expects the following core Supabase tables:
 - `household_profiles`
 - `debt_instruments`
 - `rae_executions`
+- `session_audit_log`
 
 Runtime assumptions:
 
@@ -247,14 +269,15 @@ Runtime assumptions:
 
 - Uses Supabase Auth sessions for user identity.
 - Server-side recommendation route validates the authenticated user before data access.
-- Service role key is used by seed tooling only and should remain server-local.
+- Session end route snapshots then purges working household/debt/execution data before sign-out.
+- Runtime app logic uses anon-key Supabase clients under RLS; no service-role runtime path is required.
 - Audit logging failures do not hard-fail recommendation rendering; they are logged server-side.
 
 ## Known Limitations
 
 - Prototype-stage product and schema assumptions; not production hardened.
 - No formal migrations/docs in this repo for schema bootstrap (must be applied in Supabase).
-- Forecasting/projection assumptions are intentionally simplified for Phase 0.
+- Forecasting/projection assumptions are intentionally simplified for prototype use.
 - Historical execution analytics views are limited in current UI.
 
 ## Roadmap

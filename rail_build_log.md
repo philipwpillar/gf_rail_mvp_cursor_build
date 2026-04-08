@@ -1,5 +1,55 @@
 # Rail Prototype — Build Log
 
+## 2026-04-08 — Phase 1 to Phase 5 modernization (user-owned data + lifecycle + PDF updates)
+
+### Phase 1 — Database and RLS alignment (Supabase SQL)
+- Removed synthetic household data from working tables.
+- Added `session_audit_log` table for INSERT-oriented session-end snapshots:
+  - `user_id`, `email`, `session_end_at`, `household_snapshot`, `debts_snapshot`, `rae_execution_count`.
+- Enabled/verified RLS coverage for:
+  - `household_profiles`
+  - `debt_instruments`
+  - `rae_executions`
+  - `session_audit_log`
+- Added DELETE policies required for controlled sign-out purge:
+  - own `household_profiles` row
+  - own `debt_instruments` rows via household ownership
+  - own `rae_executions` rows via household ownership
+- Confirmed `session_audit_log` remains non-deletable via policy (SELECT/INSERT only).
+
+### Phase 2 — Onboarding flow guardrails
+- Fixed onboarding completion navigation:
+  - `app/onboarding/onboarding_page.tsx` now redirects to `/dashboard` (not `/connect`).
+- Added dashboard entry guard in layout:
+  - `app/dashboard/layout.tsx` redirects users with no household profile to `/onboarding`
+  - prevents empty-profile dashboard rendering and downstream blank bootstrap behavior in UI flow.
+
+### Phase 4 — Sign-out data lifecycle
+- Added `app/api/session/end/route.ts`:
+  - Auth check (`supabase.auth.getUser()`).
+  - Snapshot household/debts/RAE execution count into `session_audit_log`.
+  - Delete working rows in order: `rae_executions` -> `debt_instruments` -> `household_profiles`.
+  - Delete and audit insert failures are logged; route returns success with warning on partial delete.
+- Updated `app/dashboard/components/sidebar.tsx` sign-out sequence:
+  - Calls `POST /api/session/end` before `supabase.auth.signOut()`.
+  - Added non-blocking fallback if API call fails.
+  - Added `isSigningOut` loading state and disabled button while processing.
+
+### Phase 5 — PDF ownership projection correction
+- Updated `lib/pdf/PlanDocument.tsx`:
+  - Added in-document future value helper (`7%` nominal annual assumption, monthly compounding).
+  - Replaced month-60 investment snapshot row with:
+    - projected investment value at 10 years
+    - projected investment value at 20 years
+  - Renamed section title to `Ownership Projection`.
+  - Added sub-label: "Assumes 7% nominal annual growth. For illustration only."
+
+### Resulting product profile (current)
+- User-owned onboarding data flow is now primary (no seeded-household dependency in core UX).
+- Dashboard access is guarded by real household presence.
+- Sign-out captures an auditable snapshot and purges working financial rows.
+- PDF ownership section now matches product spec for 10-year and 20-year projections.
+
 ## 2026-03-28 — Vercel production deployment (Hobby)
 
 ### Deployment details
