@@ -69,17 +69,33 @@ export function PlanDocument({ payload }: PlanDocumentProps) {
     payload.projections.debtFreeMonth === null
       ? "Not debt-free inside 60 months"
       : `${payload.projections.debtFreeMonth} months`;
-  const monthlyInvestmentContribution = payload.result.finalAllocation.investmentContribution;
-  const existingInvestmentValue = payload.projections.monthlySnapshots[0]?.investmentValue ?? 0;
+  const MONTHLY_GROWTH_RATE_PDF = 0.07 / 12;
+  const snap60 = payload.projections.monthlySnapshots[59];
+  const snap59 = payload.projections.monthlySnapshots[58];
+
+  // Use the 5-year accumulated investment value as the starting point
+  const existingInvestmentValue = snap60?.investmentValue ?? 0;
+
+  // Derive the stabilised monthly contribution from the last two snapshots
+  const monthlyInvestmentContribution =
+    snap60 && snap59
+      ? Math.max(
+          0,
+          Math.round(
+            snap60.investmentValue -
+              snap59.investmentValue * (1 + MONTHLY_GROWTH_RATE_PDF)
+          )
+        )
+      : payload.result.finalAllocation.investmentContribution;
   const value10yr = projectedInvestmentValue(
     monthlyInvestmentContribution,
     existingInvestmentValue,
-    120,
+    60,
   );
   const value20yr = projectedInvestmentValue(
     monthlyInvestmentContribution,
     existingInvestmentValue,
-    240,
+    180,
   );
 
   return (
@@ -151,6 +167,13 @@ export function PlanDocument({ payload }: PlanDocumentProps) {
           <Text style={{ ...styles.label, fontSize: 9 }}>
             Assumes 7% nominal annual growth. For illustration only.
           </Text>
+          {payload.result.finalAllocation.investmentContribution === 0 ? (
+            <Text style={{ ...styles.label, fontSize: 9, marginTop: 2 }}>
+              Based on projected contribution of £
+              {(monthlyInvestmentContribution / 100).toFixed(0)}
+              /month after debt clearance.
+            </Text>
+          ) : null}
           <View style={styles.row}>
             <Text style={styles.label}>Debt-free timeline</Text>
             <Text>{debtFreeMonthText}</Text>
