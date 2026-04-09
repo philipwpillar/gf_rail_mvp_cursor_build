@@ -88,6 +88,16 @@ export default async function OwnershipPage() {
   const projections = computeProjections(snapshot);
   const isOwnershipActive = liveResult.stage === PipelineStage.STAGE_3_OWNERSHIP;
   const monthlyContributionPence = liveResult.finalAllocation.investmentContribution;
+  const snap60 = projections.monthlySnapshots[59];
+  const snap59 = projections.monthlySnapshots[58];
+  const MONTHLY_GROWTH_RATE = 0.07 / 12;
+  const projectedMonthlyContributionPence =
+    snap60 && snap59
+      ? Math.max(
+          0,
+          Math.round(snap60.investmentValue - snap59.investmentValue * (1 + MONTHLY_GROWTH_RATE)),
+        )
+      : 0;
 
   return (
     <div className="space-y-4">
@@ -97,6 +107,10 @@ export default async function OwnershipPage() {
           <div className="mt-3 space-y-2 type-body text-zinc-700">
             <p className="font-medium">Not yet active</p>
             <p>Once your buffer is funded and high-rate debt is cleared, your surplus flows here.</p>
+            <p>
+              Once active, Rail estimates you will invest approximately £
+              {(projectedMonthlyContributionPence / 100).toFixed(0)}/month.
+            </p>
             <p>
               Estimated activation:{" "}
               {projections.debtFreeMonth === null
@@ -119,7 +133,10 @@ export default async function OwnershipPage() {
         )}
       </div>
 
-      <OwnershipClient monthlyContributionPence={monthlyContributionPence} />
+      <OwnershipClient
+        monthlyContributionPence={monthlyContributionPence}
+        projectedMonthlyContributionPence={projectedMonthlyContributionPence}
+      />
     </div>
   );
 }
