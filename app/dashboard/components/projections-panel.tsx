@@ -31,6 +31,7 @@ export function ProjectionsPanel({
   const railData = monthlySnapshots.map((snapshot) => ({
     month: snapshot.month,
     totalDebtPounds: snapshot.totalDebt / 100,
+    investmentValuePounds: snapshot.investmentValue / 100,
   }));
   const minimumData = minimumOnlySnapshots.map((snapshot) => ({
     month: snapshot.month,
@@ -45,7 +46,7 @@ export function ProjectionsPanel({
 
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-4">
-      <p className="type-section-title text-zinc-900">Five-Year Projection</p>
+      <p className="type-section-title text-zinc-900">Debt & Investment — 5 Year View</p>
 
       <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3">
@@ -101,6 +102,15 @@ export function ProjectionsPanel({
               isAnimationActive={false}
               name="Minimums only"
             />
+            <Line
+              type="monotone"
+              dataKey="investmentValuePounds"
+              stroke="#10b981"
+              strokeWidth={2}
+              dot={false}
+              isAnimationActive={false}
+              name="Investment (Rail)"
+            />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -112,6 +122,10 @@ export function ProjectionsPanel({
         <div className="flex items-center gap-2">
           <span className="w-4 border-t-2 border-dashed border-rose-600" aria-hidden="true" />
           <span>Minimums only</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" aria-hidden="true" />
+          <span>Investment (Rail)</span>
         </div>
       </div>
     </div>
