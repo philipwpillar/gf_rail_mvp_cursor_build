@@ -10,6 +10,7 @@ import {
   YAxis,
 } from "recharts";
 import type { MinimumOnlyMonthlySnapshot, MonthlySnapshot } from "@/lib/rae/projections";
+import { formatPounds } from "@/lib/utils";
 
 type ProjectionsPanelProps = {
   debtFreeMonth: number | null;
@@ -17,10 +18,6 @@ type ProjectionsPanelProps = {
   monthlySnapshots: MonthlySnapshot[];
   minimumOnlySnapshots?: MinimumOnlyMonthlySnapshot[];
 };
-
-function formatPounds(pence: number): string {
-  return `£${(pence / 100).toFixed(2)}`;
-}
 
 export function ProjectionsPanel({
   debtFreeMonth,

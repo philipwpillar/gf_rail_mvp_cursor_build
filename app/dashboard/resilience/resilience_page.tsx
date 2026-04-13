@@ -3,6 +3,7 @@ import { applySurplusDelta, parseSurplusDeltaCookie } from "@/lib/server/scenari
 import { cookies } from "next/headers";
 import { runRAE } from "@/lib/rae/engine";
 import { buildHouseholdSnapshot, type DebtSnapshotRow } from "@/lib/server/snapshot-utils";
+import { formatPounds } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -23,10 +24,6 @@ type LatestExecution = {
   final_buffer_contribution: number;
   executed_at: string;
 };
-
-function formatPounds(pence: number): string {
-  return `£${(pence / 100).toFixed(2)}`;
-}
 
 export default async function ResiliencePage() {
   const cookieStore = await cookies();

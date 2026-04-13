@@ -6,6 +6,7 @@ import { computeProjections } from "@/lib/rae/projections";
 import { runRAE } from "@/lib/rae/engine";
 import type { HouseholdSnapshot } from "@/lib/rae/types";
 import type { DebtSnapshotRow } from "@/lib/server/snapshot-utils";
+import { formatPounds } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ProjectionsPanel } from "../components/projections-panel";
 
@@ -15,10 +16,6 @@ type DebtProjectionPanelProps = {
   snapshot: HouseholdSnapshot;
   debts: DebtRow[];
 };
-
-function formatPounds(pence: number): string {
-  return `£${(pence / 100).toFixed(2)}`;
-}
 
 const HOVER_CLOSE_DELAY_MS = 120;
 

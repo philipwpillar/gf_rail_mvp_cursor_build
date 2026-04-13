@@ -1,6 +1,7 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import type { RaeApiPayload } from "@/lib/server/rae-recommendation";
 import { PipelineStage } from "@/lib/rae/types";
+import { formatPounds } from "@/lib/utils";
 
 type PlanDocumentProps = {
   payload: RaeApiPayload;
@@ -34,10 +35,6 @@ const styles = StyleSheet.create({
     lineHeight: 1.4,
   },
 });
-
-function formatPounds(pence: number): string {
-  return `£${(pence / 100).toFixed(2)}`;
-}
 
 function stageLabel(stage: PipelineStage): string {
   if (stage === PipelineStage.STAGE_1_RESILIENCE) return "Stage 1 - Building Safety Net";

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { DebtAllocation } from "@/lib/rae/types";
 import { buildHouseholdSnapshot, type DebtSnapshotRow } from "@/lib/server/snapshot-utils";
 import { applySurplusDelta, parseSurplusDeltaCookie } from "@/lib/server/scenario";
+import { formatPounds } from "@/lib/utils";
 import { cookies } from "next/headers";
 import { DebtProjectionPanel } from "./debt_projection_panel";
 
@@ -22,10 +23,6 @@ type LatestExecution = {
   final_debt_allocations: DebtAllocation[] | null;
   executed_at: string;
 };
-
-function formatPounds(pence: number): string {
-  return `£${(pence / 100).toFixed(2)}`;
-}
 
 export default async function DebtPage() {
   const cookieStore = await cookies();

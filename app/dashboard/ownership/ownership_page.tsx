@@ -4,6 +4,7 @@ import { runRAE } from "@/lib/rae/engine";
 import { PipelineStage } from "@/lib/rae/types";
 import { buildHouseholdSnapshot, type DebtSnapshotRow } from "@/lib/server/snapshot-utils";
 import { applySurplusDelta, parseSurplusDeltaCookie } from "@/lib/server/scenario";
+import { formatPounds } from "@/lib/utils";
 import { OwnershipClient } from "@/components/ownership/OwnershipClient";
 import { cookies } from "next/headers";
 
@@ -25,10 +26,6 @@ type LatestExecution = {
   b_target: number;
   stage: PipelineStage;
 };
-
-function formatPounds(pence: number): string {
-  return `£${(pence / 100).toFixed(2)}`;
-}
 
 export default async function OwnershipPage() {
   const cookieStore = await cookies();
