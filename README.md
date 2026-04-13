@@ -1,168 +1,242 @@
-# Rail Prototype
+# Rail — Household CFO Platform
 
-Rail Prototype is a household financial-planning web application built with Next.js and Supabase.
-It generates stage-based monthly allocation recommendations using the Rail Allocation Engine (RAE), then presents projections for resilience, debt payoff, and long-term ownership/investing outcomes.
+Rail is a household financial planning application built with Next.js and Supabase. It analyses monthly cashflow and routes surplus through a three-stage optimisation pipeline: building an emergency buffer, eliminating high-cost debt, and transitioning into long-term index fund ownership. The core IP is the Rail Allocation Engine (RAE) — a pure-function algorithm that adapts to income volatility, behavioural commitment, and income-shock risk.
+
+This repository is a read-only prototype. No money moves. Rail recommends. The user acts.
+
+---
 
 ## Table of Contents
 
-- [Non-Technical Overview](#non-technical-overview)
-- [What This App Does](#what-this-app-does)
-- [Core Features](#core-features)
+- [What Rail Does](#what-rail-does)
+- [The Three-Stage Pipeline](#the-three-stage-pipeline)
+- [Demo Flow](#demo-flow)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
 - [Project Structure](#project-structure)
 - [Prerequisites](#prerequisites)
 - [Environment Variables](#environment-variables)
 - [Quick Start](#quick-start)
-- [Seed Data (Optional)](#seed-data-optional)
 - [Running Tests and Quality Checks](#running-tests-and-quality-checks)
-- [API](#api)
+- [API Reference](#api-reference)
 - [RAE Decision Model](#rae-decision-model)
-- [Data Requirements](#data-requirements)
-- [Security and Privacy Notes](#security-and-privacy-notes)
-- [Known Limitations](#known-limitations)
-- [Roadmap](#roadmap)
-- [Troubleshooting](#troubleshooting)
+- [Key Engineering Decisions](#key-engineering-decisions)
+- [Database Tables](#database-tables)
+- [Security](#security)
+- [Known Limitations and Phase 0B Roadmap](#known-limitations-and-phase-0b-roadmap)
 - [Contributing](#contributing)
 - [License](#license)
 
-## Non-Technical Overview
+---
 
-### Problem
+## What Rail Does
 
-Many households do not struggle because they lack income, but because monthly surplus is not routed in a stable order.
-Without a clear system, money gets split reactively across emergency savings, debts, and investing, which slows progress and increases stress.
+Many households do not struggle because they lack income, but because monthly surplus is never routed in a deliberate order. Without a system, money gets split reactively across savings, debt, and spending — which slows every goal simultaneously.
 
-### What Rail Solves
-
-Rail provides a simple operating system for household cash flow:
-
-- build a safe emergency buffer first,
-- eliminate expensive debt with disciplined routing,
-- then transition to long-term ownership/investing.
-
-Instead of generic budgeting tips, Rail gives a concrete, stage-based monthly allocation plan that adapts to household risk.
-
-### How It Works in Practice
+Rail gives each household one clear answer each month: here is your surplus, here is exactly where it goes, and here is what that means for your financial position in 12, 24, and 60 months.
 
 For each signed-in household, Rail:
 
-1. Reads current income, obligations, debts, and buffer position.
-2. Identifies the current stage (Resilience, Debt, or Ownership).
-3. Computes exactly how this month’s surplus should be allocated.
-4. Shows projected outcomes (debt-free timing, interest impact, and ownership growth path).
+1. Reads income, obligations, debts, buffer balance, income stability, and plan commitment from Supabase.
+2. Computes monthly discretionary surplus.
+3. Classifies the household into its current pipeline stage.
+4. Allocates surplus optimally across buffer, debt, and investment buckets.
+5. Adjusts for income-shock risk when volatility is elevated.
+6. Projects outcomes forward across a 60-month horizon.
+7. Stores an immutable audit record of every execution.
 
-### Why This Matters
+---
 
-- **Clarity:** one recommended plan each month, not many conflicting choices.
-- **Behavioral momentum:** users can see progress by stage and understand "what to do next."
-- **Risk awareness:** elevated income-shock risk triggers more protective allocations.
-- **Explainability:** recommendations include plain-language rationale, not black-box scores.
+## The Three-Stage Pipeline
 
-### Fast Demo Flow (5-7 minutes)
+**Stage 1 — Resilience**
+Build a minimum emergency buffer (3 weeks of obligations) before anything else. Full surplus flows to the buffer until B_min is met. Once met, surplus moves to Stage 2. Target is 6 weeks (B_target); the gap between B_min and B_target is filled opportunistically alongside debt repayment.
 
-1. Sign in (or create account) and open `Dashboard`.
-2. Review stage badge and monthly allocation split (buffer/debt/investment).
-3. Open `Resilience` to see current safety-net coverage and buffer progress.
-4. Open `Debt` to see payoff order, routing, and projected debt-free month.
-5. Open `Ownership` to show when surplus transitions into long-term asset building.
+**Stage 2 — Debt Elimination**
+Route surplus to high-cost debt using APR-priority (avalanche) sequencing. Households with lower plan commitment scores receive a blended 70/30 split between the highest-APR debt and the smallest-balance debt, providing behavioural momentum alongside mathematical optimisation. The strategy is user-visible and toggleable on the Debt page.
 
-## What This App Does
+**Stage 3 — Ownership**
+Once the buffer target is met and no debt above the APR threshold remains, surplus flows into index fund investing. The Ownership page shows a 20-year projection using three Vanguard LifeStrategy® fund variants (40%, 60%, 80% equity).
 
-Rail helps a household decide how to allocate monthly surplus across:
+---
 
-- emergency buffer building (resilience),
-- debt paydown (priority routing),
-- ownership/investing.
+## Demo Flow
 
-The app:
+The recommended adviser walkthrough takes 5–7 minutes:
 
-1. Authenticates users through Supabase Auth.
-2. Reads household and debt inputs from Supabase.
-3. Runs a pure financial decision engine (`runRAE`) on the server.
-4. Stores an execution audit record (`rae_executions`) for observability and history.
-5. Renders a dashboard with recommendation outputs and forward projections.
+1. Sign in and open **Dashboard** — review stage badge, monthly surplus, and allocation split (buffer / debt / investment).
+2. Open **Resilience** — review current buffer, B_min / B_target progress bar, and "fully funded in X months" projection.
+3. Open **Debt** — review the debt stack in APR order, Rail's extra payment routing, and the dual-line projection chart (With Rail vs Minimums Only). Toggle Avalanche / Blended to show behavioural adaptation.
+4. Open **Ownership** — review activation month, fund selector, and 20-year projection chart.
+5. Use the **What-if planner** in the sidebar to adjust monthly surplus and show how recommendations shift in real time.
+6. Open the **Rail Advisor** (bottom-right chat button) — ask a question about the household's plan. The Advisor has live RAE execution data injected into its context.
+7. Download the **Plan PDF** from the Dashboard.
 
-## Core Features
-
-- Email/password signup and login flows.
-- Server-side auth gating and protected dashboard routes.
-- Stage-aware recommendation engine (Resilience -> Debt -> Ownership).
-- Shock-aware allocation adjustment for elevated income-shock risk.
-- Debt routing with APR-priority behavior.
-- Projection simulation (up to 60 months) including debt-free month and interest savings estimate.
-- User-owned onboarding flow at `/onboarding` that writes/updates `household_profiles` and `debt_instruments`.
-- Dashboard guard: users without a household profile are redirected to onboarding.
-- Sign-out data lifecycle: snapshot to `session_audit_log` then RLS-governed hard delete of working rows.
-- PDF export endpoint with projection-oriented plan summary output.
-- Dashboard IA split into dedicated pages:
-  - `Dashboard`
-  - `Resilience`
-  - `Debt`
-  - `Ownership`
-- Sidebar collapse state persisted across sessions.
+---
 
 ## Tech Stack
 
-- **Framework:** Next.js (App Router), React, TypeScript
-- **Styling/UI:** Tailwind CSS, Recharts
-- **Backend/Data/Auth:** Supabase (`@supabase/supabase-js`, `@supabase/ssr`)
-- **Testing:** Jest, ts-jest
-- **Tooling:** ESLint, tsx, dotenv
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 14 (App Router), React, TypeScript |
+| Styling | Tailwind CSS, shadcn/ui |
+| Charts | Recharts |
+| Database and auth | Supabase (Postgres + Row Level Security) |
+| AI advisor | OpenRouter (multi-model chain: Gemini 2.5 Flash → GPT-4o Mini → Claude Haiku → Llama fallback) |
+| Email | Resend |
+| Analytics | Posthog |
+| PDF generation | @react-pdf/renderer |
+| Deployment | Vercel (auto-deploy from `main`) |
+| Testing | Jest, ts-jest |
+
+TypeScript strict mode is intentionally disabled for Phase 0A. The project is structurally TypeScript throughout — strict mode will be enabled incrementally when the technical co-founder joins.
+
+---
 
 ## Architecture
 
-- **UI Layer (`app/*`):**
-  - App Router pages and components for auth + dashboard views.
-- **API Layer (`app/api/rae/route.ts`):**
-  - Authenticates current user, builds recommendation payload, returns JSON.
-- **Integration Layer (`lib/server/*`):**
-  - Data mapping, snapshot construction, recommendation orchestration, audit writing.
-- **Domain Engine (`lib/rae/*`):**
-  - Pure calculation modules for surplus, classification, allocation, shock adjustments, and projections.
-  - No database/network side effects.
+```
+User request
+    │
+    ▼
+app/dashboard/*              ← Server components fetch data, render UI
+    │
+    ▼
+lib/server/rae-recommendation.ts   ← Orchestration layer: loads DB rows,
+                                      builds snapshot, calls engine,
+                                      writes audit record
+    │
+    ▼
+lib/rae/engine.ts            ← Pure function. No DB. No network.
+    │
+    ├── surplus.ts           ← S = income − obligations − Σ(minPayments)
+    ├── classifier.ts        ← Stage 1 / 2 / 3 classification + B_min / B_target
+    ├── allocator.ts         ← Stage-specific allocation + alpha strategy
+    ├── shock.ts             ← Income-shock adjustment (phi factor)
+    └── projections.ts       ← 60-month forward simulation
+```
 
-Design principle: pure engine logic is isolated from persistence and request concerns.
+**Core design principle:** `lib/rae/` is a pure calculation domain. Zero database imports. Zero network calls. It receives a `HouseholdSnapshot` and returns a `RAEResult`. This makes it fully testable in isolation and easy to reason about independently of persistence concerns.
+
+**Separation of layers:**
+- `lib/rae/` — domain logic only
+- `lib/server/` — orchestration, data mapping, snapshot construction
+- `app/api/` — auth gates, request handling, response shaping
+- `app/dashboard/` — rendering, client interactivity
+
+---
 
 ## Project Structure
 
-```text
-app/
-  api/rae/route.ts                 # Recommendation API endpoint
-  api/session/end/route.ts         # Snapshot + working-data purge before sign-out
-  api/export/pdf/route.ts          # Plan PDF generation endpoint
-  dashboard/                       # Dashboard and stage pages
-  onboarding/                      # Household/debt onboarding flow
-  login/                           # Login route and page
-  signup/                          # Signup route and page
-lib/
-  rae/                             # Pure decision engine + tests
-  server/                          # Server-side orchestration/data mapping
-  supabase/                        # Browser/server Supabase client factories
-scripts/
-  seed.ts                          # Optional synthetic demo seed
 ```
+app/
+  api/
+    rae/route.ts                  # Recommendation endpoint (GET)
+    advisor/route.ts              # AI advisor streaming endpoint (POST)
+    plan-pdf/route.ts             # Plan PDF generation (GET)
+    session/end/route.ts          # Pre-sign-out snapshot + data purge (POST)
+    email/welcome/route.ts        # Welcome email via Resend (POST)
+  components/
+    AnalyticsProvider.tsx         # Posthog initialisation (client component)
+  connect/                        # Bank connection UI (Phase 0B stub)
+  dashboard/
+    components/
+      allocation-chart.tsx        # Donut chart — monthly allocation split
+      dashboard-shell.tsx         # Layout shell, What-if planner, mobile nav
+      debt-routing-card.tsx       # Debt allocation summary card
+      projections-panel.tsx       # 60-month debt + investment chart
+      rail-top-bar.tsx            # Pipeline stage stepper
+      sidebar.tsx                 # Navigation sidebar with collapse state
+    debt/
+      debt_page.tsx               # Debt stage server page
+      debt_projection_panel.tsx   # Reactive debt table + strategy toggle
+    ownership/
+      ownership_page.tsx          # Ownership stage server page
+    resilience/
+      resilience_page.tsx         # Resilience stage server page
+    settings/
+      page.tsx                    # Settings server route
+      settings_page.tsx           # Settings client form
+    dashboard_home_page.tsx       # Main dashboard server page
+    layout.tsx                    # Dashboard layout + auth guard + top bar
+    rae-output-card.tsx           # Main recommendation card (client)
+  login/                          # Login page
+  onboarding/                     # Household + debt onboarding flow
+  signup/                         # Signup page
+components/
+  advisor/
+    AdvisorButton.tsx             # Floating chat button
+    AdvisorPanel.tsx              # Streaming AI chat panel
+  ownership/
+    FundSelector.tsx              # Vanguard LifeStrategy fund picker
+    OwnershipClient.tsx           # Ownership projection client component
+    ProjectionChart.tsx           # 20-year ownership projection chart
+  ui/                             # shadcn/ui primitives
+lib/
+  analytics.ts                    # Posthog wrapper (no-op without key)
+  utils.ts                        # Shared utilities: formatPounds, form parsers, validators
+  pdf/
+    PlanDocument.tsx              # React-PDF plan document
+  rae/
+    __tests__/                    # Engine and projection tests
+    allocator.ts                  # Stage-specific allocation logic
+    classifier.ts                 # Stage classification + B_min / B_target
+    engine.ts                     # RAE orchestrator
+    projections.ts                # 60-month simulation
+    shock.ts                      # Income-shock adjustment
+    surplus.ts                    # Surplus calculation
+    types.ts                      # Domain types and constants
+  server/
+    rae-recommendation.ts         # Recommendation orchestration
+    scenario.ts                   # What-if surplus delta handling
+    snapshot-utils.ts             # DB row → HouseholdSnapshot mapping
+    types.ts                      # Canonical server-layer row types
+  supabase/
+    client.ts                     # Browser Supabase client
+    server.ts                     # Server Supabase client (SSR/cookie-aware)
+scripts/
+  seed.ts                         # Synthetic demo household seed (debug only)
+```
+
+---
 
 ## Prerequisites
 
-- Node.js 20+ recommended
-- npm 10+ recommended
-- A Supabase project with the required tables and policies
+- Node.js 20+
+- npm 10+
+- A Supabase project with the required tables, RLS policies, and schema applied
+
+---
 
 ## Environment Variables
 
-Create `rail-prototype/.env.local` with:
+Create `.env.local` in the project root:
 
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-SUPABASE_SERVICE_ROLE_KEY=...   # required only for `npm run seed`
+# Supabase — required at runtime
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+
+# OpenRouter — required for Rail Advisor AI chat
+# Load credits at openrouter.ai/settings/credits (minimum ~$10 for paid-tier models)
+OPENROUTER_API_KEY=
+
+# Posthog — optional, analytics degrade gracefully without this
+NEXT_PUBLIC_POSTHOG_KEY=
+NEXT_PUBLIC_POSTHOG_HOST=https://eu.posthog.com
+
+# Resend — optional, welcome email is skipped gracefully without this
+RESEND_API_KEY=
+
+# Only required for `npm run seed` — never expose client-side
+SUPABASE_SERVICE_ROLE_KEY=
 ```
 
-Notes:
+**Security notes:**
+- `SUPABASE_SERVICE_ROLE_KEY` must never be added to Vercel runtime environment variables. It bypasses RLS and is seed-script only.
+- `NEXT_PUBLIC_` prefixed variables are embedded in the client bundle at build time. They are safe for public Supabase URLs and keys, and for Posthog keys. Never prefix sensitive secrets with `NEXT_PUBLIC_`.
 
-- `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are required at runtime.
-- `SUPABASE_SERVICE_ROLE_KEY` is only needed for seeding and should never be exposed client-side.
+---
 
 ## Quick Start
 
@@ -171,141 +245,228 @@ npm install
 npm run dev
 ```
 
-Then open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000).
 
-Routing behavior:
+Routing behaviour:
+- `/` redirects to `/dashboard` when authenticated, `/login` when not.
+- `/dashboard/*` requires auth; users without a household profile are redirected to `/onboarding`.
+- `/onboarding` collects household name, income, obligations, buffer balance, income type, debt stack, and plan commitment score, then writes to Supabase.
 
-- `/` redirects to `/dashboard` when authenticated.
-- `/` redirects to `/login` when unauthenticated.
-- `/dashboard/*` is protected and requires auth.
-
-## Seed Data (Deprecated)
-
-Seeded synthetic households are no longer part of the main product flow.
-Current behavior is user-owned data captured during onboarding and scoped by `auth.uid()` under RLS.
-If a legacy seed script exists locally, treat it as migration/debug-only and do not use it for standard demos.
+---
 
 ## Running Tests and Quality Checks
 
+The four-command gate must pass before every push to `main`:
+
 ```bash
-npm run test
-npm run lint
-npx tsc --noEmit
-npm run build
+npm run test && npm run lint && npx tsc --noEmit && npm run build
 ```
 
-## API
+Current test coverage:
+- `lib/rae/__tests__/engine.test.ts` — seeded household assertions for Stage 1 and Stage 3 engine output
+- `lib/rae/__tests__/projections.test.ts` — 60-month projection bounds for both seed households
+
+---
+
+## API Reference
 
 ### `GET /api/rae`
 
-Authenticated endpoint that returns a recommendation payload:
+Authenticated. Returns the current recommendation payload.
 
-- `result` (RAE output contract)
-- `projections` (60-month forward simulation)
-- `context` (household/debt metadata for rendering)
-- `meta`:
-  - `auditLogged`
+**Response:**
+```json
+{
+  "result": { /* RAEResult — stage, allocations, shock adjustment, rationale */ },
+  "projections": { /* 60-month simulation — debtFreeMonth, interestSaved, monthlySnapshots */ },
+  "context": { /* householdName, debts metadata */ },
+  "meta": { "auditLogged": true, "profileBootstrapped": false }
+}
+```
 
-Errors:
+Supports an optional `rail.scenario.surplus_delta` cookie for What-if mode. Scenario runs never write to `rae_executions`.
 
-- `401` when user is unauthenticated.
-- `500` for internal failures (generic message returned to client).
+**Errors:** `401` unauthenticated, `500` internal failure (generic message).
+
+---
+
+### `POST /api/advisor`
+
+Authenticated. Streams an AI response from the Rail Advisor using OpenRouter.
+
+**Request body:**
+```json
+{
+  "householdId": "uuid",
+  "messages": [{ "role": "user", "content": "..." }]
+}
+```
+
+The system prompt is assembled server-side from live household profile, active debt instruments, and the latest `rae_executions` row — giving the model accurate financial context. Falls through a model chain (Gemini 2.5 Flash → GPT-4o Mini → Claude Haiku → Llama free) on rate limit or failure.
+
+**Response:** `text/plain` stream. Header `x-rail-advisor-model` reports which model served the response.
+
+---
+
+### `GET /api/plan-pdf`
+
+Authenticated. Returns a generated PDF plan summary as `application/pdf`.
+
+Runs `buildRaeRecommendation` with `writeAudit: false` (PDF generation never writes audit records).
+
+---
 
 ### `POST /api/session/end`
 
-Authenticated endpoint used immediately before client sign-out:
+Authenticated. Called immediately before client-side `supabase.auth.signOut()`.
 
-1. Reads household + debts for the current user.
-2. Writes a snapshot row to `session_audit_log`.
-3. Deletes working rows from `rae_executions`, `debt_instruments`, and `household_profiles` (RLS constrained).
+1. Reads household and debt rows for the current user.
+2. Writes a snapshot to `session_audit_log` (INSERT only — immutable).
+3. Deletes working rows in order: `rae_executions` → `debt_instruments` → `household_profiles`.
 
-Response behavior:
+**Response:** `{ ok: true }` on success, `{ ok: true, warning: "partial_delete" }` if any delete step fails.
 
-- `200` with `{ ok: true }` on success.
-- `200` with `{ ok: true, warning: "partial_delete" }` when one or more delete steps fail.
-- `401` when unauthenticated.
-- `500` on unexpected server errors.
+---
 
-### `POST /api/export/pdf`
+### `POST /api/email/welcome`
 
-Authenticated endpoint that returns a generated plan PDF using `@react-pdf/renderer`.
-The output includes household snapshot, allocation detail, debt projection signals, and ownership projection values.
+Unauthenticated internal route. Called fire-and-forget from the signup page after successful `supabase.auth.signUp()`. Sends a welcome email via Resend. Returns `{ ok: true, skipped: true }` gracefully when `RESEND_API_KEY` is absent.
+
+---
 
 ## RAE Decision Model
 
-The engine executes this high-level flow:
+All monetary values are integers in **pence** throughout the engine and database. Division to pounds happens only at the display layer.
 
-1. **Surplus calculation**
-   - `monthlyIncome - fixedObligations - sum(activeDebtMinimums)`
-2. **Stage classification**
-   - Stage 1: Build safety net until minimum buffer floor
-   - Stage 2: Eliminate prioritized debt
-   - Stage 3: Build ownership/investment
-3. **Base allocation**
-   - Distributes surplus by stage and plan commitment profile
-4. **Shock adjustment**
-   - Reallocates to buffer protection when income-shock risk is elevated
-5. **Rationale generation**
-   - Produces user-facing explanation text for current allocation
+### Surplus
 
-All monetary values are represented in **pence** (integers).
+```
+S = monthlyIncome − fixedObligations − Σ(active debt minimum payments)
+```
 
-## Data Requirements
+If S ≤ 0, the household is in obligation stress. No allocation is produced.
 
-The app expects the following core Supabase tables:
+### Stage Classification
 
-- `household_profiles`
-- `debt_instruments`
-- `rae_executions`
-- `session_audit_log`
+| Condition | Stage |
+|---|---|
+| `bufferBalance < B_min` | Stage 1 — Resilience |
+| Any active debt APR > 7% | Stage 2 — Debt Elimination |
+| Otherwise | Stage 3 — Ownership |
 
-Runtime assumptions:
+```
+B_min    = (weeklyObligations × 3)   where weeklyObligations = totalObligations / 4.33
+B_target = (weeklyObligations × 6)
+```
 
-- Authenticated users are linked to one `household_profiles` row by `user_id`.
-- Debt rows are linked to households by `household_id`.
-- RLS policies permit users to read/write only their own records where applicable.
+### Base Allocation
 
-## Security and Privacy Notes
+**Stage 1:** Full surplus fills the buffer gap to B_min. Any remaining surplus targets the highest-APR debt.
 
-- Uses Supabase Auth sessions for user identity.
-- Server-side recommendation route validates the authenticated user before data access.
-- Session end route snapshots then purges working household/debt/execution data before sign-out.
-- Runtime app logic uses anon-key Supabase clients under RLS; no service-role runtime path is required.
-- Audit logging failures do not hard-fail recommendation rendering; they are logged server-side.
+**Stage 2:** Allocation strategy is determined by `planCommitmentScore` via `computeAlpha()`:
+- Score ≥ 0.6 → `alpha = 1.0` → pure avalanche (100% to highest-APR debt)
+- Score < 0.6 → `alpha = 0.7` → blended 70/30 (highest-APR debt + smallest-balance debt)
 
-## Known Limitations
+**Stage 3:** Remaining buffer gap (B_min to B_target) is filled opportunistically; surplus flows to investment.
 
-- Prototype-stage product and schema assumptions; not production hardened.
-- No formal migrations/docs in this repo for schema bootstrap (must be applied in Supabase).
-- Forecasting/projection assumptions are intentionally simplified for prototype use.
-- Historical execution analytics views are limited in current UI.
+### Shock Adjustment
 
-## Roadmap
+When `incomeShockProbability > shockThreshold (0.25)`, a phi factor redirects a portion of debt or investment allocation back to the buffer:
 
-Planned/likely next improvements:
+```
+phi = max(0, (pShock − threshold) / (1 − threshold))
+redirectAmount = min(pool × 0.5, pool × phi)
+```
 
-- richer stress-testing and scenario comparison views,
-- stronger schema/migration versioning inside repo,
-- expanded test coverage for API and integration boundaries,
-- improved ownership projection and explanatory modeling.
+`incomeShockProbability` is derived from `income_volatility / monthlyIncome × 2`. The income volatility input is collected during onboarding and settings as a three-option selector (Stable / Variable / Highly variable), mapping to 0%, 20%, and 40% of monthly income respectively.
 
-## Troubleshooting
+### Interest Accrual Model
 
-- **Missing env vars error:** ensure `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` exist in `.env.local`.
-- **Unauthorized on dashboard/API:** sign in first and confirm Supabase auth cookie/session is active.
-- **No recommendation data:** verify household/debt rows exist for the user (or run seed for demo data).
-- **Seed script fails:** confirm `SUPABASE_SERVICE_ROLE_KEY` is set and has admin privileges.
+Projections use the standard consumer credit model: interest accrues on the opening balance before the payment is applied.
+
+```
+interestAccrued = round(openingBalance × apr/12)
+nextBalance = round(max(0, openingBalance + interestAccrued − payment))
+```
+
+---
+
+## Key Engineering Decisions
+
+**`lib/rae/` is zero-dependency pure functions.** No database imports. No network calls. This is enforced by `.cursorrules` and makes the engine independently testable and auditable. The `rae_executions` table provides an immutable FCA Consumer Duty audit trail of every execution.
+
+**All monetary values are pence integers.** `£2,800` is stored and computed as `280000`. Floats are never used for money. Division to pounds happens only at the display layer via `formatPounds()` in `lib/utils.ts`.
+
+**`rae_executions` is INSERT-only.** This table is an append-only audit log. No DELETE or UPDATE policy exists. Scenario (What-if) runs are explicitly excluded from audit writes.
+
+**`SUPABASE_SERVICE_ROLE_KEY` is never in Vercel runtime.** The application runs exclusively on the anon key under RLS. Service role is seed-script only.
+
+**Server components by default.** `"use client"` is only added when browser APIs, user interaction state, or React hooks are required. Data fetching always happens server-side.
+
+**One shared utility source.** `lib/utils.ts` is the canonical home for `formatPounds`, `poundsStringToPence`, `aprStringToDecimal`, `isPositiveNumber`, and `isNonNegativeNumber`. `lib/server/types.ts` is the canonical home for `HouseholdRow`, `DebtRow`, and `LatestExecutionRow`.
+
+---
+
+## Database Tables
+
+| Table | Purpose |
+|---|---|
+| `household_profiles` | One row per user. Income, obligations, buffer, volatility, commitment score. |
+| `debt_instruments` | One row per debt. Balance, APR, minimum payment, type, active flag. |
+| `rae_executions` | Immutable audit log. One row per RAE execution. INSERT only. |
+| `session_audit_log` | Snapshot written on sign-out. INSERT only. Never deleted. |
+
+RLS policies scope every table to `auth.uid()`. No row is readable or writable without a valid authenticated session, except `session_audit_log` which is INSERT-only even for the owning user.
+
+---
+
+## Security
+
+- All server routes validate the authenticated user via `supabase.auth.getUser()` before accessing data. `getSession()` is never used for auth gating (it trusts the client).
+- The anon key is the only Supabase key used at runtime. Service role is never present in Vercel environment variables.
+- `rae_executions` has no DELETE policy — rows cannot be removed by any client or server path.
+- Truelayer tokens (Phase 0B) must never be stored in plaintext in any Supabase column.
+- All secrets live in `.env.local`. Nothing is hardcoded.
+- The `"use client"` boundary is minimised — data never flows through client components to the database directly, with the exception of the onboarding and settings forms which write household data using the anon key under RLS.
+
+---
+
+## Known Limitations and Phase 0B Roadmap
+
+**Current prototype limitations:**
+- Income and financial data are self-reported via onboarding. There is no live bank connection yet.
+- The `/connect` page (bank picker UI) is a visual stub — Truelayer OAuth is Phase 0B.
+- `income_volatility` is a manual input approximation, not derived from transaction history.
+- The projection horizon is fixed at 60 months.
+- No schema migration files exist in the repository — the schema must be applied directly in Supabase.
+- TypeScript strict mode is disabled.
+
+**Phase 0B roadmap:**
+- Truelayer open banking integration — OAuth handshake, token handling, transaction fetch, categorisation pipeline mapping transactions to `fixedObligations` and `monthlyIncome`
+- Supabase-generated typed client replacing manual row type declarations in `lib/server/types.ts`
+- Projection snapshots — periodic capture of `rae_executions` output for trend views
+- Schema migration versioning inside the repository
+- Expanded test coverage for API and integration boundaries
+- Strict mode TypeScript migration
+
+---
 
 ## Contributing
 
-For local changes:
+1. Create a feature branch from `main`.
+2. Keep `lib/rae/` pure — zero database or network imports. This is non-negotiable.
+3. All monetary values are integers in pence. Never introduce float money arithmetic.
+4. Add or update tests for any behavioural change to the engine or projections.
+5. Run the full gate before opening a PR:
 
-1. Create a feature branch.
-2. Keep domain logic in `lib/rae/*` pure (no DB/network side effects).
-3. Add/update tests for behavioral changes.
-4. Run lint, tests, typecheck, and build before opening a PR.
+```bash
+npm run test && npm run lint && npx tsc --noEmit && npm run build
+```
+
+6. Read `.cursorrules` in the project root before writing any code. It is the authoritative guide to architectural decisions, conventions, and constraints.
+
+---
 
 ## License
 
-No license file is currently defined in this repository.
-If you intend to distribute this software, add an explicit `LICENSE` file (for example MIT, Apache-2.0, or proprietary terms).
+No license file is currently defined in this repository. If you intend to distribute this software, add an explicit `LICENSE` file.
