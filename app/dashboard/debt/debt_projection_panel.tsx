@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Info } from "lucide-react";
 import { computeProjections } from "@/lib/rae/projections";
 import { runRAE } from "@/lib/rae/engine";
-import type { DebtAllocation, HouseholdSnapshot } from "@/lib/rae/types";
+import type { HouseholdSnapshot } from "@/lib/rae/types";
 import type { DebtSnapshotRow } from "@/lib/server/snapshot-utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ProjectionsPanel } from "../components/projections-panel";
@@ -13,7 +13,6 @@ type DebtRow = DebtSnapshotRow;
 
 type DebtProjectionPanelProps = {
   snapshot: HouseholdSnapshot;
-  allocations: DebtAllocation[];
   debts: DebtRow[];
 };
 
@@ -87,7 +86,7 @@ function StrategyInfoPopover({ title, copy }: { title: string; copy: string }) {
   );
 }
 
-export function DebtProjectionPanel({ snapshot, allocations, debts }: DebtProjectionPanelProps) {
+export function DebtProjectionPanel({ snapshot, debts }: DebtProjectionPanelProps) {
   const [strategy, setStrategy] = useState<"avalanche" | "blended">(
     snapshot.planCommitmentScore >= 0.6 ? "avalanche" : "blended",
   );
@@ -115,8 +114,6 @@ export function DebtProjectionPanel({ snapshot, allocations, debts }: DebtProjec
     "Rail is routing 100% of surplus to your highest-rate debt — the mathematically optimal sequence.";
   const blendedCopy =
     "Rail is routing 70% of surplus to your highest-rate debt and 30% to your smallest balance for behavioural momentum.";
-
-  void allocations;
 
   return (
     <>

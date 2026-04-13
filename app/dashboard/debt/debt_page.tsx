@@ -94,13 +94,13 @@ export default async function DebtPage() {
           {debts.length === 0 ? (
             <p className="type-body text-zinc-600">No active debts.</p>
           ) : (
-            debts.map((debt, index) => (
+            debts.map((debt) => (
               <div key={debt.id} className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="font-medium text-zinc-900">
                     {debt.label ?? debt.id} {debt.lender ? `(${debt.lender})` : ""}
                   </p>
-                  {index === 0 ? (
+                  {allocationByDebtId.get(debt.id) !== undefined && allocationByDebtId.get(debt.id)! > 0 ? (
                     <span className="rounded-full bg-violet-100 px-2 py-1 text-xs font-semibold text-violet-800">
                       Target
                     </span>
@@ -118,7 +118,7 @@ export default async function DebtPage() {
         </div>
       </div>
 
-      <DebtProjectionPanel snapshot={snapshot} allocations={allocations} debts={debts} />
+      <DebtProjectionPanel snapshot={snapshot} debts={debts} />
     </div>
   );
 }
