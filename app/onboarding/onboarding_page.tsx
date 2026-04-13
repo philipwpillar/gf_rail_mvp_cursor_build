@@ -3,6 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { captureEvent } from "@/lib/analytics";
+import {
+  poundsStringToPence,
+  aprStringToDecimal,
+  isPositiveNumber,
+  isNonNegativeNumber,
+} from "@/lib/utils";
 
 type Step1Data = {
   displayName: string;
@@ -20,24 +27,6 @@ type DebtEntry = {
   aprStr: string;
   minPaymentStr: string;
 };
-
-function poundsStringToPence(str: string): number {
-  return Math.round(parseFloat(str) * 100);
-}
-
-function aprStringToDecimal(str: string): number {
-  return parseFloat(str) / 100;
-}
-
-function isPositiveNumber(str: string): boolean {
-  const n = parseFloat(str);
-  return !isNaN(n) && n > 0;
-}
-
-function isNonNegativeNumber(str: string): boolean {
-  const n = parseFloat(str);
-  return !isNaN(n) && n >= 0;
-}
 
 export function OnboardingPage() {
   const router = useRouter();
@@ -213,6 +202,7 @@ export function OnboardingPage() {
         if (debtError) throw new Error("Failed to save debt instruments.");
       }
 
+      captureEvent("onboarding_completed");
       router.push("/dashboard");
     } catch (err) {
       setErrors(

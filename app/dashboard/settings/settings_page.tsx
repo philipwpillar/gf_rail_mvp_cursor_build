@@ -3,6 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import {
+  poundsStringToPence,
+  aprStringToDecimal,
+  isPositiveNumber,
+  isNonNegativeNumber,
+} from "@/lib/utils";
 
 export type HouseholdFormData = {
   displayName: string;
@@ -26,24 +32,6 @@ type SettingsPageProps = {
   initialHousehold: HouseholdFormData;
   initialDebts: DebtEntry[];
 };
-
-function poundsStringToPence(str: string): number {
-  return Math.round(parseFloat(str) * 100);
-}
-
-function aprStringToDecimal(str: string): number {
-  return parseFloat(str) / 100;
-}
-
-function isPositiveNumber(str: string): boolean {
-  const n = parseFloat(str);
-  return !isNaN(n) && n > 0;
-}
-
-function isNonNegativeNumber(str: string): boolean {
-  const n = parseFloat(str);
-  return !isNaN(n) && n >= 0;
-}
 
 export function SettingsPage({ initialHousehold, initialDebts }: SettingsPageProps) {
   const router = useRouter();

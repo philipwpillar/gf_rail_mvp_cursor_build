@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Input } from "@/components/ui/input";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -50,10 +51,9 @@ export default function LoginPage() {
             <label className="type-form-label" htmlFor="email">
               Email
             </label>
-            <input
+            <Input
               id="email"
               type="email"
-              className="h-10 w-full rounded-md border border-zinc-200 bg-white px-3 type-body outline-none focus:border-zinc-400"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -65,10 +65,9 @@ export default function LoginPage() {
             <label className="type-form-label" htmlFor="password">
               Password
             </label>
-            <input
+            <Input
               id="password"
               type="password"
-              className="h-10 w-full rounded-md border border-zinc-200 bg-white px-3 type-body outline-none focus:border-zinc-400"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required

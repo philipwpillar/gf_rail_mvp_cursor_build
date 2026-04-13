@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Sidebar } from "./sidebar";
 import { RailTopBar } from "./rail-top-bar";
 import { PipelineStage } from "@/lib/rae/types";
+import { formatPounds } from "@/lib/utils";
 
 type DashboardShellProps = {
   householdName?: string;
@@ -28,10 +29,6 @@ export function DashboardShell({
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
   const [isMobileSidebarVisible, setIsMobileSidebarVisible] = useState<boolean>(false);
   const [surplusDeltaPence, setSurplusDeltaPence] = useState<number>(initialSurplusDeltaPence);
-
-  function formatPounds(pence: number): string {
-    return `£${(pence / 100).toFixed(2)}`;
-  }
 
   function toggleSidebar() {
     setIsSidebarCollapsed((prev) => {
@@ -103,14 +100,15 @@ export function DashboardShell({
           <div className="rounded-xl border border-zinc-200 bg-white p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="type-section-title text-zinc-900">Scenario control</p>
+                <p className="type-section-title text-zinc-900">What-if planner</p>
                 <p className="type-caption text-zinc-600">
-                  Adjust monthly surplus to preview how recommendations shift.
+                  Adjust your monthly surplus to see how your plan changes.
                 </p>
               </div>
               <p className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-800">
-                Surplus delta: {surplusDeltaPence >= 0 ? "+" : ""}
-                {formatPounds(surplusDeltaPence)}
+                {surplusDeltaPence === 0
+                  ? "Current plan"
+                  : `${surplusDeltaPence > 0 ? "+" : ""}${formatPounds(surplusDeltaPence)}/mo`}
               </p>
             </div>
             <div className="mt-3">

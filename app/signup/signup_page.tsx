@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Input } from "@/components/ui/input";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -29,6 +30,11 @@ export default function SignupPage() {
       }
 
       router.push("/onboarding");
+      void fetch("/api/email/welcome", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign up failed");
@@ -41,17 +47,16 @@ export default function SignupPage() {
     <div className="flex flex-1 items-center justify-center px-6 py-12">
       <div className="w-full max-w-sm">
         <h1 className="type-h1">Create account</h1>
-        <p className="mt-2 type-body text-zinc-600">Create your Rail prototype account.</p>
+        <p className="mt-2 type-body text-zinc-600">Create your free Rail account.</p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           <div className="space-y-1">
             <label className="type-form-label" htmlFor="email">
               Email
             </label>
-            <input
+            <Input
               id="email"
               type="email"
-              className="h-10 w-full rounded-md border border-zinc-200 bg-white px-3 type-body outline-none focus:border-zinc-400"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -63,10 +68,9 @@ export default function SignupPage() {
             <label className="type-form-label" htmlFor="password">
               Password
             </label>
-            <input
+            <Input
               id="password"
               type="password"
-              className="h-10 w-full rounded-md border border-zinc-200 bg-white px-3 type-body outline-none focus:border-zinc-400"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required

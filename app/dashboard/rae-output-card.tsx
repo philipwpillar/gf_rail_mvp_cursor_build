@@ -6,10 +6,8 @@ import { AllocationChart } from "./components/allocation-chart";
 import { DebtRoutingCard } from "./components/debt-routing-card";
 import { ProjectionsPanel } from "./components/projections-panel";
 import type { RaeApiPayload } from "@/lib/server/rae-recommendation";
-
-function formatPounds(pence: number): string {
-  return `£${(pence / 100).toFixed(2)}`;
-}
+import { formatPounds } from "@/lib/utils";
+import { captureEvent } from "@/lib/analytics";
 
 function stageLabel(stage: PipelineStage): string {
   switch (stage) {
@@ -77,6 +75,7 @@ export function RaeOutputCard({ initialPayload, initialError }: RaeOutputCardPro
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
+      captureEvent("plan_downloaded");
     } catch (downloadErr) {
       setDownloadError(
         downloadErr instanceof Error
@@ -105,9 +104,9 @@ export function RaeOutputCard({ initialPayload, initialError }: RaeOutputCardPro
     <div className="rounded-xl border border-zinc-200 bg-white p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="type-h1">Household Plan Scenario</h2>
+                <h2 className="type-h1">Your financial plan</h2>
                 <p className="mt-1 type-body text-zinc-600">
-                  Server-preloaded recommendation generated from pure <code>runRAE</code>.
+                  Based on your household profile. Updated each time you visit.
                 </p>
               </div>
               {result ? (
@@ -133,7 +132,7 @@ export function RaeOutputCard({ initialPayload, initialError }: RaeOutputCardPro
                 <div className="border-b-2 border-blue-500 pb-2 font-medium text-blue-600">
                   Allocation Plan
                 </div>
-                <div className="pb-2 type-caption text-zinc-500">Additional views coming in Phase 0B</div>
+                <div className="pb-2 type-caption text-zinc-500">More views coming soon</div>
               </div>
             </div>
 
@@ -199,7 +198,7 @@ export function RaeOutputCard({ initialPayload, initialError }: RaeOutputCardPro
                         </p>
                       </div>
                     </div>
-                    <AllocationChart data={chartData} formatPounds={formatPounds} />
+                    <AllocationChart data={chartData} />
                   </div>
                 </div>
 
@@ -207,7 +206,6 @@ export function RaeOutputCard({ initialPayload, initialError }: RaeOutputCardPro
                   <DebtRoutingCard
                     allocations={result.finalAllocation.debtAllocations}
                     debts={context?.debts ?? []}
-                    formatPounds={formatPounds}
                   />
 
                   <div className="rounded-xl border border-zinc-200 bg-white p-4">

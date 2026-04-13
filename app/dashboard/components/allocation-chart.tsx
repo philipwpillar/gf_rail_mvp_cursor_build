@@ -1,6 +1,7 @@
 "use client";
 
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { formatPounds } from "@/lib/utils";
 
 type ChartDatum = {
   name: string;
@@ -10,10 +11,9 @@ type ChartDatum = {
 
 type AllocationChartProps = {
   data: ChartDatum[];
-  formatPounds: (value: number) => string;
 };
 
-export function AllocationChart({ data, formatPounds }: AllocationChartProps) {
+export function AllocationChart({ data }: AllocationChartProps) {
   return (
     <div className="h-56 rounded-lg border border-zinc-200 bg-zinc-50 p-2">
       {data.length === 0 ? (

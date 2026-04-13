@@ -1,6 +1,7 @@
 "use client";
 
 import type { DebtAllocation } from "@/lib/rae/types";
+import { formatPounds } from "@/lib/utils";
 
 type DebtContext = {
   id: string;
@@ -11,10 +12,9 @@ type DebtContext = {
 type DebtRoutingCardProps = {
   allocations: DebtAllocation[];
   debts: DebtContext[];
-  formatPounds: (value: number) => string;
 };
 
-export function DebtRoutingCard({ allocations, debts, formatPounds }: DebtRoutingCardProps) {
+export function DebtRoutingCard({ allocations, debts }: DebtRoutingCardProps) {
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-4">
       <p className="type-section-title text-zinc-900">Debt Priority Routing</p>
