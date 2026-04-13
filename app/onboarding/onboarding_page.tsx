@@ -9,6 +9,7 @@ type Step1Data = {
   monthlyIncomeStr: string;
   fixedObligationsStr: string;
   bufferBalanceStr: string;
+  incomeType: "stable" | "variable" | "highly-variable";
 };
 
 type DebtEntry = {
@@ -46,7 +47,9 @@ export function OnboardingPage() {
     monthlyIncomeStr: "",
     fixedObligationsStr: "",
     bufferBalanceStr: "",
+    incomeType: "stable",
   });
+  const [commitmentScore, setCommitmentScore] = useState<number>(0.6);
   const [debts, setDebts] = useState<DebtEntry[]>([]);
   const [errors, setErrors] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -135,6 +138,12 @@ export function OnboardingPage() {
       }
 
       const monthlyIncome = poundsStringToPence(step1.monthlyIncomeStr);
+      const incomeVolatility =
+        step1.incomeType === "stable"
+          ? 0
+          : step1.incomeType === "variable"
+            ? Math.round(monthlyIncome * 0.2)
+            : Math.round(monthlyIncome * 0.4);
       const fixedObligations = poundsStringToPence(step1.fixedObligationsStr);
       const bufferBalance = poundsStringToPence(step1.bufferBalanceStr);
 
@@ -152,10 +161,10 @@ export function OnboardingPage() {
           .update({
             display_name: step1.displayName.trim(),
             monthly_income: monthlyIncome,
-            income_volatility: 0,
+            income_volatility: incomeVolatility,
             fixed_obligations: fixedObligations,
             buffer_balance: bufferBalance,
-            plan_commitment_score: 0.5,
+            plan_commitment_score: commitmentScore,
           })
           .eq("user_id", user.id);
         householdId = existing.id;
@@ -167,10 +176,10 @@ export function OnboardingPage() {
             display_name: step1.displayName.trim(),
             is_synthetic: false,
             monthly_income: monthlyIncome,
-            income_volatility: 0,
+            income_volatility: incomeVolatility,
             fixed_obligations: fixedObligations,
             buffer_balance: bufferBalance,
-            plan_commitment_score: 0.5,
+            plan_commitment_score: commitmentScore,
           })
           .select("id")
           .single();
@@ -312,6 +321,28 @@ export function OnboardingPage() {
                 }
               />
             </div>
+
+            <div className="space-y-1">
+              <label className="type-form-label" htmlFor="incomeType">
+                Income type
+              </label>
+              <p className="type-caption text-zinc-400">How stable is your monthly income?</p>
+              <select
+                id="incomeType"
+                className="h-10 w-full rounded-md border border-zinc-200 bg-white px-3 type-body outline-none focus:border-zinc-400"
+                value={step1.incomeType}
+                onChange={(e) =>
+                  setStep1((prev) => ({
+                    ...prev,
+                    incomeType: e.target.value as Step1Data["incomeType"],
+                  }))
+                }
+              >
+                <option value="stable">Stable salary or fixed income</option>
+                <option value="variable">Variable income (freelance, commission)</option>
+                <option value="highly-variable">Highly variable (irregular, self-employed)</option>
+              </select>
+            </div>
           </div>
 
           {errors ? (
@@ -319,6 +350,26 @@ export function OnboardingPage() {
               {errors}
             </div>
           ) : null}
+
+          <div className="mt-6 space-y-1">
+            <label className="type-form-label">
+              How committed are you to following your financial plan?
+            </label>
+            <p className="type-caption text-zinc-400">
+              This personalises your debt payoff strategy.
+            </p>
+            <select
+              className="h-10 w-full rounded-md border border-zinc-200 bg-white px-3 type-body outline-none focus:border-zinc-400"
+              value={String(commitmentScore)}
+              onChange={(e) => setCommitmentScore(parseFloat(e.target.value))}
+            >
+              <option value="0.2">1 — Very unlikely to stick to it</option>
+              <option value="0.4">2 — Unlikely</option>
+              <option value="0.6">3 — Neutral — I&apos;ll try</option>
+              <option value="0.8">4 — Likely</option>
+              <option value="1.0">5 — Very committed</option>
+            </select>
+          </div>
 
           <button
             type="button"

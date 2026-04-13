@@ -63,8 +63,6 @@ function buildRationale(
         shockRedirectAmount,
       )} was redirected to buffer protection.`,
     );
-  } else {
-    parts.push("No shock adjustment applied this cycle.");
   }
 
   return parts.join(" ");

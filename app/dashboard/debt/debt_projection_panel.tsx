@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Info } from "lucide-react";
 import { computeProjections } from "@/lib/rae/projections";
+import { runRAE } from "@/lib/rae/engine";
 import type { DebtAllocation, HouseholdSnapshot } from "@/lib/rae/types";
 import type { DebtSnapshotRow } from "@/lib/server/snapshot-utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -96,6 +97,16 @@ export function DebtProjectionPanel({ snapshot, allocations, debts }: DebtProjec
     planCommitmentScore: strategy === "avalanche" ? 0.85 : 0.5,
   };
   const projections = computeProjections(adjustedSnapshot);
+  const liveResult = runRAE(adjustedSnapshot);
+  const liveAllocationByDebtId = new Map(
+    liveResult.finalAllocation.debtAllocations.map((a) => [a.debtId, a.amount]),
+  );
+  const targetDebtId: string | null =
+    liveResult.finalAllocation.debtAllocations.length > 0
+      ? liveResult.finalAllocation.debtAllocations.reduce((max, a) =>
+          a.amount > max.amount ? a : max,
+        ).debtId
+      : null;
   const strategyCopy =
     strategy === "blended"
       ? "Rail is routing 70% of surplus to your highest-rate debt and 30% to your smallest balance for behavioural momentum."
@@ -106,7 +117,6 @@ export function DebtProjectionPanel({ snapshot, allocations, debts }: DebtProjec
     "Rail is routing 70% of surplus to your highest-rate debt and 30% to your smallest balance for behavioural momentum.";
 
   void allocations;
-  void debts;
 
   return (
     <>
@@ -162,7 +172,63 @@ export function DebtProjectionPanel({ snapshot, allocations, debts }: DebtProjec
           />
         </div>
       </div>
-
+      {debts.length > 0 ? (
+        <div className="rounded-xl border border-zinc-200 bg-white p-5">
+          <p className="type-section-title text-zinc-900">Debt stack — current routing</p>
+          <p className="mt-1 type-caption text-zinc-500">
+            Extra payments update when you toggle strategy above.
+          </p>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-zinc-200">
+                  <th className="pb-2 text-left type-label text-zinc-500 font-medium">Debt</th>
+                  <th className="pb-2 text-right type-label text-zinc-500 font-medium">Balance</th>
+                  <th className="pb-2 text-right type-label text-zinc-500 font-medium">APR</th>
+                  <th className="pb-2 text-right type-label text-zinc-500 font-medium">Minimum</th>
+                  <th className="pb-2 text-right type-label text-zinc-500 font-medium">Rail extra</th>
+                  <th className="pb-2 text-right type-label text-zinc-500 font-medium">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {debts.map((debt) => {
+                  const extra = liveAllocationByDebtId.get(debt.id) ?? 0;
+                  const total = debt.min_payment + extra;
+                  return (
+                    <tr key={debt.id} className="border-b border-zinc-100 last:border-0">
+                      <td className="py-3 pr-4">
+                        <div className="flex items-center gap-2">
+                          <span className="type-body text-zinc-900">{debt.label ?? debt.id}</span>
+                          {debt.id === targetDebtId ? (
+                            <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs font-semibold text-violet-700">
+                              Target
+                            </span>
+                          ) : null}
+                        </div>
+                      </td>
+                      <td className="py-3 text-right type-body text-zinc-700">
+                        {formatPounds(debt.balance)}
+                      </td>
+                      <td className="py-3 text-right type-body text-zinc-700">
+                        {(debt.apr * 100).toFixed(1)}%
+                      </td>
+                      <td className="py-3 text-right type-body text-zinc-500">
+                        {formatPounds(debt.min_payment)}
+                      </td>
+                      <td className="py-3 text-right type-body font-medium text-violet-700">
+                        {extra > 0 ? `+${formatPounds(extra)}` : "—"}
+                      </td>
+                      <td className="py-3 text-right type-body font-medium text-zinc-900">
+                        {formatPounds(total)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : null}
     </>
   );
 }

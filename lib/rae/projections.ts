@@ -50,9 +50,8 @@ function applyMonthToDebt(
   }
 
   const payment = debt.minPayment + extraAllocation;
-  const postPayment = Math.round(Math.max(0, debt.balance - payment));
-  const interestAccrued = Math.round(postPayment * (debt.apr / 12));
-  const nextBalance = postPayment + interestAccrued;
+  const interestAccrued = Math.round(debt.balance * (debt.apr / 12));
+  const nextBalance = Math.round(Math.max(0, debt.balance + interestAccrued - payment));
   const isActive = nextBalance > 0;
 
   return {

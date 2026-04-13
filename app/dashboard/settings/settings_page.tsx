@@ -9,6 +9,8 @@ export type HouseholdFormData = {
   monthlyIncomeStr: string;
   fixedObligationsStr: string;
   bufferBalanceStr: string;
+  incomeType: "stable" | "variable" | "highly-variable";
+  commitmentScore: number;
 };
 
 export type DebtEntry = {
@@ -132,6 +134,12 @@ export function SettingsPage({ initialHousehold, initialDebts }: SettingsPagePro
       const monthlyIncome = poundsStringToPence(form.monthlyIncomeStr);
       const fixedObligations = poundsStringToPence(form.fixedObligationsStr);
       const bufferBalance = poundsStringToPence(form.bufferBalanceStr);
+      const incomeVolatility =
+        form.incomeType === "stable"
+          ? 0
+          : form.incomeType === "variable"
+            ? Math.round(monthlyIncome * 0.2)
+            : Math.round(monthlyIncome * 0.4);
 
       const { data: existing, error: existingError } = await supabase
         .from("household_profiles")
@@ -150,9 +158,10 @@ export function SettingsPage({ initialHousehold, initialDebts }: SettingsPagePro
           .update({
             display_name: form.displayName.trim(),
             monthly_income: monthlyIncome,
-            income_volatility: 0,
+            income_volatility: incomeVolatility,
             fixed_obligations: fixedObligations,
             buffer_balance: bufferBalance,
+            plan_commitment_score: form.commitmentScore,
           })
           .eq("user_id", user.id);
         if (updateError) throw new Error("Failed to update household profile.");
@@ -165,10 +174,10 @@ export function SettingsPage({ initialHousehold, initialDebts }: SettingsPagePro
             display_name: form.displayName.trim(),
             is_synthetic: false,
             monthly_income: monthlyIncome,
-            income_volatility: 0,
+            income_volatility: incomeVolatility,
             fixed_obligations: fixedObligations,
             buffer_balance: bufferBalance,
-            plan_commitment_score: 0.5,
+            plan_commitment_score: form.commitmentScore,
           })
           .select("id")
           .single();
@@ -295,6 +304,54 @@ export function SettingsPage({ initialHousehold, initialDebts }: SettingsPagePro
                   setForm((prev) => ({ ...prev, bufferBalanceStr: e.target.value }))
                 }
               />
+            </div>
+
+            <div className="space-y-1">
+              <label className="type-form-label" htmlFor="incomeType">
+                Income type
+              </label>
+              <p className="type-caption text-zinc-400">How stable is your monthly income?</p>
+              <select
+                id="incomeType"
+                className="h-10 w-full rounded-md border border-zinc-200 bg-white px-3 type-body outline-none focus:border-zinc-400"
+                value={form.incomeType}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    incomeType: e.target.value as HouseholdFormData["incomeType"],
+                  }))
+                }
+              >
+                <option value="stable">Stable salary or fixed income</option>
+                <option value="variable">Variable income (freelance, commission)</option>
+                <option value="highly-variable">Highly variable (irregular, self-employed)</option>
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="type-form-label" htmlFor="commitmentScore">
+                Plan commitment
+              </label>
+              <p className="type-caption text-zinc-400">
+                How likely are you to stick to your financial plan?
+              </p>
+              <select
+                id="commitmentScore"
+                className="h-10 w-full rounded-md border border-zinc-200 bg-white px-3 type-body outline-none focus:border-zinc-400"
+                value={String(form.commitmentScore)}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    commitmentScore: parseFloat(e.target.value),
+                  }))
+                }
+              >
+                <option value="0.2">1 — Very unlikely to stick to it</option>
+                <option value="0.4">2 — Unlikely</option>
+                <option value="0.6">3 — Neutral — I&apos;ll try</option>
+                <option value="0.8">4 — Likely</option>
+                <option value="1.0">5 — Very committed</option>
+              </select>
             </div>
           </div>
         </div>

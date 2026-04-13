@@ -8,9 +8,22 @@ type HouseholdRow = {
   id: string;
   display_name: string | null;
   monthly_income: number;
+  income_volatility: number;
   fixed_obligations: number;
   buffer_balance: number;
+  plan_commitment_score: number;
 };
+
+function deriveIncomeType(
+  incomeVolatility: number,
+  monthlyIncome: number,
+): "stable" | "variable" | "highly-variable" {
+  if (monthlyIncome <= 0 || incomeVolatility <= 0) return "stable";
+  const ratio = incomeVolatility / monthlyIncome;
+  if (ratio <= 0.1) return "stable";
+  if (ratio <= 0.3) return "variable";
+  return "highly-variable";
+}
 
 type DebtRow = {
   id: string;
@@ -32,7 +45,9 @@ export default async function SettingsRoute() {
 
   const { data: household, error: householdError } = await supabase
     .from("household_profiles")
-    .select("id, display_name, monthly_income, fixed_obligations, buffer_balance")
+    .select(
+      "id, display_name, monthly_income, income_volatility, fixed_obligations, buffer_balance, plan_commitment_score",
+    )
     .eq("user_id", user.id)
     .maybeSingle<HouseholdRow>();
   if (householdError) {
@@ -58,12 +73,16 @@ export default async function SettingsRoute() {
         monthlyIncomeStr: (household.monthly_income / 100).toFixed(2),
         fixedObligationsStr: (household.fixed_obligations / 100).toFixed(2),
         bufferBalanceStr: (household.buffer_balance / 100).toFixed(2),
+        incomeType: deriveIncomeType(household.income_volatility, household.monthly_income),
+        commitmentScore: household.plan_commitment_score ?? 0.6,
       }
     : {
         displayName: "",
         monthlyIncomeStr: "",
         fixedObligationsStr: "",
         bufferBalanceStr: "",
+        incomeType: "stable",
+        commitmentScore: 0.6,
       };
 
   const initialDebts: DebtEntry[] = (debtRows ?? []).map((d) => ({

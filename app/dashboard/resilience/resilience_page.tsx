@@ -104,6 +104,13 @@ export default async function ResiliencePage() {
       : currentBuffer < bTarget
         ? { label: "Safe", tone: "bg-amber-100 text-amber-800" }
         : { label: "Fully funded", tone: "bg-emerald-100 text-emerald-800" };
+  const monthlyBufferContribution = scenarioResult.finalAllocation.bufferContribution;
+  const monthsToFunded: number | null =
+    currentBuffer >= bTarget
+      ? 0
+      : monthlyBufferContribution > 0
+        ? Math.ceil((bTarget - currentBuffer) / monthlyBufferContribution)
+        : null;
 
   return (
     <div className="space-y-4">
@@ -163,9 +170,26 @@ export default async function ResiliencePage() {
         <div className="rounded-xl border border-zinc-200 bg-white p-5">
           <p className="type-section-title text-zinc-900">What your buffer covers</p>
           <p className="mt-2 type-body text-zinc-600">
-            At your current obligations of {formatPounds(Math.round(weeklyObligations))}/week, your buffer covers{" "}
-            {weeksCovered.toFixed(1)} weeks.
+            At your current obligations of {formatPounds(Math.round(weeklyObligations))}/week,
+            your buffer covers {weeksCovered.toFixed(1)} weeks of essential expenses.
           </p>
+          {monthsToFunded === 0 ? (
+            <p className="mt-3 type-body text-emerald-700 font-medium">Buffer fully funded.</p>
+          ) : monthsToFunded !== null ? (
+            <p className="mt-3 type-body text-zinc-700">
+              At{" "}
+              <span className="font-medium">{formatPounds(monthlyBufferContribution)}/month</span>,
+              your buffer will be fully funded in{" "}
+              <span className="font-medium">
+                {monthsToFunded} month{monthsToFunded === 1 ? "" : "s"}
+              </span>
+              .
+            </p>
+          ) : (
+            <p className="mt-3 type-body text-zinc-500">
+              No buffer contribution this cycle — surplus is fully allocated to debt.
+            </p>
+          )}
         </div>
       </div>
     </div>
