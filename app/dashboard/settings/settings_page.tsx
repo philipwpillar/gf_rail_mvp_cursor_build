@@ -180,11 +180,11 @@ export function SettingsPage({ initialHousehold, initialDebts }: SettingsPagePro
         householdId = inserted.id;
       }
 
-      const { error: deleteError } = await supabase
+      const { error: debtResetError } = await supabase
         .from("debt_instruments")
         .delete()
         .eq("household_id", householdId);
-      if (deleteError) throw new Error("Failed to reset debt instruments.");
+      if (debtResetError) throw new Error("Failed to reset debt instruments.");
 
       if (debts.length > 0) {
         const { error: debtError } = await supabase
