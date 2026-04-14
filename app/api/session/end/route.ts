@@ -69,39 +69,6 @@ export async function POST() {
       console.error("Failed to insert session audit log", auditInsertError);
     }
 
-    let hasDeleteFailure = false;
-
-    const { error: deleteRaeError } = await supabase
-      .from("rae_executions")
-      .delete()
-      .eq("household_id", household.id);
-    if (deleteRaeError) {
-      hasDeleteFailure = true;
-      console.error("Failed to delete rae_executions", deleteRaeError);
-    }
-
-    const { error: deleteDebtError } = await supabase
-      .from("debt_instruments")
-      .delete()
-      .eq("household_id", household.id);
-    if (deleteDebtError) {
-      hasDeleteFailure = true;
-      console.error("Failed to delete debt_instruments", deleteDebtError);
-    }
-
-    const { error: deleteHouseholdError } = await supabase
-      .from("household_profiles")
-      .delete()
-      .eq("user_id", user.id);
-    if (deleteHouseholdError) {
-      hasDeleteFailure = true;
-      console.error("Failed to delete household_profiles", deleteHouseholdError);
-    }
-
-    if (hasDeleteFailure) {
-      return NextResponse.json({ ok: true, warning: "partial_delete" });
-    }
-
     return NextResponse.json({ ok: true }, { status: 200 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";

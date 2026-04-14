@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Input } from "@/components/ui/input";
 import {
   poundsStringToPence,
   aprStringToDecimal,
@@ -39,6 +40,10 @@ export function SettingsPage({ initialHousehold, initialDebts }: SettingsPagePro
   const [debts, setDebts] = useState<DebtEntry[]>(initialDebts);
   const [errors, setErrors] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   function addDebt() {
     if (debts.length >= 5) return;
@@ -207,6 +212,33 @@ export function SettingsPage({ initialHousehold, initialDebts }: SettingsPagePro
       );
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handleDeleteAccount() {
+    if (!deletePassword) {
+      setDeleteError("Please enter your password to confirm deletion.");
+      return;
+    }
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      const response = await fetch("/api/account/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: deletePassword }),
+      });
+      const data = (await response.json()) as { ok?: boolean; error?: string };
+      if (!response.ok) {
+        throw new Error(data.error ?? "Account deletion failed.");
+      }
+      // Auth user is now deleted — sign out client-side and go to login
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      router.push("/login");
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : "Something went wrong.");
+      setIsDeleting(false);
     }
   }
 
@@ -481,6 +513,69 @@ export function SettingsPage({ initialHousehold, initialDebts }: SettingsPagePro
         >
           Cancel
         </button>
+      </div>
+
+      <div className="rounded-xl border border-red-200 bg-red-50 p-5">
+        <p className="type-section-title text-red-900">Danger zone</p>
+        <p className="mt-1 type-body text-red-700">
+          Permanently delete your account and all associated financial data.
+          This cannot be undone.
+        </p>
+
+        {!showDeleteConfirm ? (
+          <button
+            type="button"
+            onClick={() => setShowDeleteConfirm(true)}
+            className="mt-4 rounded-md border border-red-300 bg-white px-4 py-2 type-button text-red-700 hover:bg-red-100"
+          >
+            Delete account
+          </button>
+        ) : (
+          <div className="mt-4 space-y-3">
+            <p className="type-body font-medium text-red-800">
+              Are you sure? This will permanently delete your household profile,
+              debt data, and your login. You cannot undo this.
+            </p>
+            <div className="space-y-1">
+              <label className="type-form-label text-red-800" htmlFor="deletePassword">
+                Enter your password to confirm
+              </label>
+              <Input
+                id="deletePassword"
+                type="password"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                autoComplete="current-password"
+                disabled={isDeleting}
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => void handleDeleteAccount()}
+                disabled={isDeleting || !deletePassword}
+                className="rounded-md bg-red-600 px-4 py-2 type-button text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {isDeleting ? "Deleting..." : "Yes, delete my account"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setDeletePassword("");
+                  setDeleteError(null);
+                }}
+                disabled={isDeleting}
+                className="rounded-md border border-zinc-300 bg-white px-4 py-2 type-button text-zinc-700 hover:bg-zinc-100 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </div>
+            {deleteError ? (
+              <p className="type-body text-red-700">{deleteError}</p>
+            ) : null}
+          </div>
+        )}
       </div>
     </div>
   );

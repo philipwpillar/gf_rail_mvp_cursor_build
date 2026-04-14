@@ -29,7 +29,19 @@ export default function LoginPage() {
         return;
       }
 
-      router.push("/dashboard");
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        const { data: household } = await supabase
+          .from("household_profiles")
+          .select("id")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        router.push(household ? "/dashboard" : "/onboarding");
+      } else {
+        router.push("/dashboard");
+      }
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
