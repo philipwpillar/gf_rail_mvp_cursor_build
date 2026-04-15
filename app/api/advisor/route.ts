@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
+import { ADVISOR_SYSTEM_PROMPT_TEMPLATE } from "@/lib/advisor/system-prompt";
 
 export const dynamic = "force-dynamic";
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -79,16 +80,7 @@ function buildSystemPromptPreamble(context: {
     2,
   );
 
-  return [
-    "You are the Rail Advisor.",
-    "Here is the household's current financial position (authoritative data).",
-    "",
-    serialized,
-    "",
-    "Answer questions based on this data only.",
-    "If something is not present in the data, say you don't know and ask for the missing detail.",
-    "This is not regulated financial advice.",
-  ].join("\n");
+  return ADVISOR_SYSTEM_PROMPT_TEMPLATE.replace("{HOUSEHOLD_DATA_JSON}", serialized);
 }
 
 async function callOpenRouterWithFallback({
