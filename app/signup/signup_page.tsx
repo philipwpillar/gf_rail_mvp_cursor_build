@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
+import { RailLogo } from "@/components/brand/RailLogo";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -46,6 +47,9 @@ export default function SignupPage() {
   return (
     <div className="flex flex-1 items-center justify-center px-6 py-12">
       <div className="w-full max-w-sm">
+        <div className="mb-8">
+          <RailLogo variant="lockup" height={32} />
+        </div>
         <h1 className="type-h1">Create account</h1>
         <p className="mt-2 type-body text-zinc-600">Create your free Rail account.</p>
 
