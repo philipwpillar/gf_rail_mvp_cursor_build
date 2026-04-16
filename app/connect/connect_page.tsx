@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { RailLogo } from "@/components/brand/RailLogo";
 
 const BANKS = [
   { id: "barclays", name: "Barclays", initial: "B", colour: "#00AEEF" },
@@ -54,7 +55,7 @@ export function ConnectPage() {
 
   return (
     <main className="min-h-screen bg-white flex flex-col items-center justify-center px-6">
-      <p className="font-serif italic font-bold text-[22px] text-[#3b82f6]">RAIL</p>
+      <RailLogo variant="lockup" height={32} />
 
       {!connecting ? (
         <>
