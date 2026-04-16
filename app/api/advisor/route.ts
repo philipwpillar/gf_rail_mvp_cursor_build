@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
 import { ADVISOR_SYSTEM_PROMPT_TEMPLATE } from "@/lib/advisor/system-prompt";
+import { buildHouseholdSnapshot } from "@/lib/server/snapshot-utils";
+import { runRAE } from "@/lib/rae/engine";
+import { computeProjections } from "@/lib/rae/projections";
 
 export const dynamic = "force-dynamic";
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -63,16 +66,25 @@ type LatestExecutionRow = {
   rationale: unknown;
 };
 
+type ProjectionSummary = {
+  debt_free_month: number | null;
+  total_interest_saved_vs_minimum: number;
+  investment_value_at_month_60: number;
+  projected_monthly_investment_at_month_60: number;
+};
+
 function buildSystemPromptPreamble(context: {
   household: HouseholdProfileRow;
   debts: DebtInstrumentRow[];
   latestExecution: LatestExecutionRow | null;
+  projections: ProjectionSummary | null;
 }): string {
   const serialized = JSON.stringify(
     {
       household_profile: context.household,
       active_debt_instruments: context.debts,
       latest_rae_execution: context.latestExecution,
+      projections: context.projections,
       currency: "GBP",
       amounts_are_in: "pence",
     },
@@ -207,6 +219,45 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Failed to load latest RAE execution." }, { status: 500 });
   }
 
+  let projectionSummary: ProjectionSummary | null = null;
+  try {
+    const snapshot = buildHouseholdSnapshot(
+      {
+        monthly_income: household.monthly_income,
+        income_volatility: household.income_volatility,
+        fixed_obligations: household.fixed_obligations,
+        buffer_balance: household.buffer_balance,
+        plan_commitment_score: household.plan_commitment_score,
+      },
+      (activeDebts ?? []).map((debt) => ({
+        id: debt.id,
+        label: debt.label,
+        lender: debt.lender,
+        debt_type: debt.debt_type as any,
+        balance: debt.balance,
+        apr: debt.apr,
+        min_payment: debt.min_payment,
+        is_active: debt.is_active,
+      })) as any,
+    );
+    const projResult = computeProjections(snapshot);
+    const snap60 = projResult.monthlySnapshots[59];
+    const snap59 = projResult.monthlySnapshots[58];
+    const MONTHLY_GROWTH = 0.07 / 12;
+    const projectedMonthly =
+      snap60 && snap59
+        ? Math.max(0, Math.round(snap60.investmentValue - snap59.investmentValue * (1 + MONTHLY_GROWTH)))
+        : 0;
+    projectionSummary = {
+      debt_free_month: projResult.debtFreeMonth,
+      total_interest_saved_vs_minimum: projResult.totalInterestSavedVsMinimum,
+      investment_value_at_month_60: snap60?.investmentValue ?? 0,
+      projected_monthly_investment_at_month_60: projectedMonthly,
+    };
+  } catch {
+    // Non-blocking — advisor degrades gracefully without projections
+  }
+
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: "Missing OPENROUTER_API_KEY" }, { status: 500 });
@@ -219,6 +270,7 @@ export async function POST(request: Request) {
         household,
         debts: activeDebts ?? [],
         latestExecution: latestExecution ?? null,
+        projections: projectionSummary,
       }),
     },
     ...messages,

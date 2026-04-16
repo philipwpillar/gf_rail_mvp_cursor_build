@@ -170,8 +170,26 @@ export function AdvisorPanel({ householdId, householdName, isOpen, onOpenChange 
 
         <div className="flex-1 space-y-3 overflow-y-auto p-4">
           {messages.length === 0 ? (
-            <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3 type-body text-zinc-600">
-              Ask about your latest RAE output and what each part means in plain English.
+            <div className="space-y-3">
+              <p className="type-caption text-zinc-500">
+                Ask about your plan, or tap a question below to get started.
+              </p>
+              {[
+                "What stage am I in and what does that mean?",
+                "When will I be debt free?",
+                "How much will I have invested in 5 years?",
+                "Explain my monthly allocation in plain English.",
+                "What is the avalanche method?",
+              ].map((question) => (
+                <button
+                  key={question}
+                  type="button"
+                  onClick={() => setInputValue(question)}
+                  className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-left type-caption text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50 transition-colors"
+                >
+                  {question}
+                </button>
+              ))}
             </div>
           ) : null}
 
