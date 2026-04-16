@@ -118,7 +118,7 @@ export function Sidebar({
             <p className="type-caption text-zinc-500">Household CFO Platform</p>
           </div>
         ) : (
-          <p className="rounded-md bg-zinc-200 px-2 py-1 text-xs font-semibold">R</p>
+          <RailLogo variant="icon" height={24} />
         )}
         {showCollapseToggle ? (
           <button

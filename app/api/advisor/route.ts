@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
 import { ADVISOR_SYSTEM_PROMPT_TEMPLATE } from "@/lib/advisor/system-prompt";
 import { buildHouseholdSnapshot } from "@/lib/server/snapshot-utils";
-import { runRAE } from "@/lib/rae/engine";
 import { computeProjections } from "@/lib/rae/projections";
 
 export const dynamic = "force-dynamic";

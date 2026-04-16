@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Rail — Household CFO",
   description: "Rail Prototype",
+  icons: {
+    icon: "/rail-icon.svg",
+  },
 };
 
 export default function RootLayout({
