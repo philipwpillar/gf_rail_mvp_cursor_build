@@ -10,6 +10,7 @@ import {
   isPositiveNumber,
   isNonNegativeNumber,
 } from "@/lib/utils";
+import { RailLogo } from "@/components/brand/RailLogo";
 
 type Step1Data = {
   displayName: string;
@@ -217,7 +218,7 @@ export function OnboardingPage() {
     <main
       className={`min-h-screen bg-white flex flex-col items-center px-6 py-12 ${step === 1 ? "justify-center" : ""}`}
     >
-      <p className="font-serif italic font-bold text-[22px] text-[#3b82f6]">RAIL</p>
+      <RailLogo variant="lockup" height={32} />
 
       <div className="mt-4 flex items-center gap-2">
         <span

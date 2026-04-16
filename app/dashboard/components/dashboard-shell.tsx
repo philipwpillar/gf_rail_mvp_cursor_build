@@ -6,6 +6,7 @@ import { Sidebar } from "./sidebar";
 import { RailTopBar } from "./rail-top-bar";
 import { PipelineStage } from "@/lib/rae/types";
 import { formatPounds } from "@/lib/utils";
+import { RailLogo } from "@/components/brand/RailLogo";
 
 type DashboardShellProps = {
   householdName?: string;
@@ -94,7 +95,7 @@ export function DashboardShell({
               </svg>
               Menu
             </button>
-            <p className="type-section-title tracking-tight text-zinc-800">Rail</p>
+            <RailLogo variant="icon" height={28} />
           </div>
 
           <div className="rounded-xl border border-zinc-200 bg-white p-4">

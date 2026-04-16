@@ -1,4 +1,5 @@
 import { PipelineStage } from "@/lib/rae/types";
+import { RailLogo } from "@/components/brand/RailLogo";
 
 type RailTopBarProps = {
   householdName: string;
@@ -27,7 +28,7 @@ const STEPS = ["Resilience", "Debt Elimination", "Ownership"] as const;
 export function RailTopBar({ householdName, stage, surplus }: RailTopBarProps) {
   return (
     <div className="bg-[#0c1e35] h-14 flex items-center px-5 gap-0 border-b border-white/[0.08] flex-shrink-0">
-      <span className="font-serif italic font-bold text-[22px] text-[#3b82f6] tracking-wide min-w-[72px]">RAIL</span>
+      <RailLogo variant="icon" height={32} onDark />
       <div className="w-px h-7 bg-white/[0.12] mx-6" />
 
       <div className="flex-1 flex items-center">

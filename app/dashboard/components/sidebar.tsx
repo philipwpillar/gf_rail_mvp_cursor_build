@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { ReactNode } from "react";
+import { RailLogo } from "@/components/brand/RailLogo";
 
 type NavItem = {
   label: string;
@@ -113,7 +114,7 @@ export function Sidebar({
       <div className="flex items-center justify-between border-b border-zinc-200 px-3 py-3">
         {!isCollapsed ? (
           <div>
-            <p className="type-section-title tracking-tight">Rail</p>
+            <RailLogo variant="icon" height={28} />
             <p className="type-caption text-zinc-500">Household CFO Platform</p>
           </div>
         ) : (
