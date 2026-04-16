@@ -14,7 +14,7 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     borderBottom: "1 solid #d4d4d8",
   },
-  brand: { fontSize: 10, color: "#3b82f6", marginBottom: 4 },
+  brand: { fontSize: 10, color: "#0D3560", marginBottom: 4 },
   title: { fontSize: 20, marginBottom: 4 },
   subtitle: { color: "#52525b", marginBottom: 2 },
   section: { marginTop: 10, paddingTop: 10, borderTop: "1 solid #e4e4e7" },

@@ -135,7 +135,7 @@ export function DashboardShell({
               <button
                 type="button"
                 onClick={applyScenario}
-                className="rounded-md bg-black px-3 py-2 type-button-xs text-white"
+                className="rounded-md bg-[#0D3560] px-3 py-2 type-button-xs text-white"
               >
                 Apply scenario
               </button>

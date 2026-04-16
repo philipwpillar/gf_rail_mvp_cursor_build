@@ -91,7 +91,7 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="h-10 w-full rounded-md bg-black px-4 type-button text-white disabled:opacity-50"
+            className="h-10 w-full rounded-md bg-[#0D3560] px-4 type-button text-white disabled:opacity-50"
           >
             {isLoading ? "Creating account…" : "Create account"}
           </button>

@@ -222,10 +222,10 @@ export function OnboardingPage() {
 
       <div className="mt-4 flex items-center gap-2">
         <span
-          className={`w-2 h-2 rounded-full ${step >= 1 ? "bg-[#3b82f6]" : "bg-zinc-200"}`}
+          className={`w-2 h-2 rounded-full ${step >= 1 ? "bg-[#0D3560]" : "bg-zinc-200"}`}
         />
         <span
-          className={`w-2 h-2 rounded-full ${step >= 2 ? "bg-[#3b82f6]" : "bg-zinc-200"}`}
+          className={`w-2 h-2 rounded-full ${step >= 2 ? "bg-[#0D3560]" : "bg-zinc-200"}`}
         />
         <p className="ml-2 type-caption text-zinc-500">Step {step} of 2</p>
       </div>
@@ -365,7 +365,7 @@ export function OnboardingPage() {
           <button
             type="button"
             onClick={handleStep1Continue}
-            className="mt-6 h-10 w-full rounded-md bg-black px-4 type-button text-white"
+            className="mt-6 h-10 w-full rounded-md bg-[#0D3560] px-4 type-button text-white"
           >
             Continue
           </button>
@@ -469,11 +469,15 @@ export function OnboardingPage() {
             <button
               type="button"
               onClick={addDebt}
-              className="mt-4 type-button text-[#3b82f6] hover:underline"
+              className="mt-4 type-button text-[#0D3560] hover:underline"
             >
               + Add a debt
             </button>
-          ) : null}
+          ) : (
+            <p className="mt-4 type-caption text-zinc-400">
+              Maximum 5 debts supported in the prototype.
+            </p>
+          )}
 
           {errors ? (
             <div className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 type-body text-red-700">
@@ -485,7 +489,7 @@ export function OnboardingPage() {
             type="button"
             onClick={() => void handleSubmit(debts)}
             disabled={isSubmitting}
-            className="mt-6 h-10 w-full rounded-md bg-black px-4 type-button text-white disabled:opacity-50"
+            className="mt-6 h-10 w-full rounded-md bg-[#0D3560] px-4 type-button text-white disabled:opacity-50"
           >
             {isSubmitting ? "Saving..." : "Continue ->"}
           </button>

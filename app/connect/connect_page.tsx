@@ -85,12 +85,15 @@ export function ConnectPage() {
           </div>
 
           <p className="type-caption text-zinc-400 mt-8 text-center">
-            Powered by Truelayer. FCA-regulated open banking. Read-only access only.
+            Demo mode — simulating Truelayer open banking connection.
+          </p>
+          <p className="type-caption text-zinc-400 mt-1 text-center">
+            Live Truelayer integration active in production. Read-only access only.
           </p>
         </>
       ) : (
         <>
-          <div className="w-12 h-12 rounded-full border-4 border-zinc-200 border-t-[#3b82f6] animate-spin mt-8" />
+          <div className="w-12 h-12 rounded-full border-4 border-zinc-200 border-t-[#20E2D7] animate-spin mt-8" />
           <p className="type-body font-medium text-zinc-900 mt-6 text-center">{stepText}</p>
           <p className="type-caption text-zinc-500 mt-2 text-center">
             This usually takes a few seconds.

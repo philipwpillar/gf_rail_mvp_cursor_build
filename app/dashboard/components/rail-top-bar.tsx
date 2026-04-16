@@ -53,7 +53,7 @@ export function RailTopBar({ householdName, stage, surplus }: RailTopBarProps) {
                     </svg>
                   </div>
                 ) : stepState === "active" ? (
-                  <div className="w-6 h-6 rounded-full bg-[#3b82f6] flex items-center justify-center text-white text-[11px] font-semibold ring-[3px] ring-[#3b82f6]/25">
+                  <div className="w-6 h-6 rounded-full bg-[#20E2D7] flex items-center justify-center text-[#0D3560] text-[11px] font-semibold ring-[3px] ring-[#20E2D7]/25">
                     {index + 1}
                   </div>
                 ) : (
@@ -95,8 +95,8 @@ export function RailTopBar({ householdName, stage, surplus }: RailTopBarProps) {
       <div className="flex items-center gap-5 ml-auto">
         <span className="text-[13px] text-white/55 font-normal truncate max-w-[140px]">{householdName}</span>
         {surplus !== null ? (
-          <div className="flex flex-col items-end leading-tight bg-[#3b82f6]/15 border border-[#3b82f6]/30 rounded-full px-3 py-1">
-            <span className="text-[9px] uppercase tracking-[0.08em] text-[#60a5fa]">Surplus</span>
+          <div className="flex flex-col items-end leading-tight bg-[#20E2D7]/15 border border-[#20E2D7]/30 rounded-full px-3 py-1">
+            <span className="text-[9px] uppercase tracking-[0.08em] text-[#20E2D7]">Surplus</span>
             <span className="text-[14px] font-semibold text-white">£{(surplus / 100).toFixed(0)}/mo</span>
           </div>
         ) : (

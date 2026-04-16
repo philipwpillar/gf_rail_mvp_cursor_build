@@ -483,11 +483,15 @@ export function SettingsPage({ initialHousehold, initialDebts }: SettingsPagePro
           <button
             type="button"
             onClick={addDebt}
-            className="mt-4 type-button text-[#3b82f6] hover:underline"
+            className="mt-4 type-button text-[#0D3560] hover:underline"
           >
             + Add a debt
           </button>
-        ) : null}
+        ) : (
+          <p className="mt-4 type-caption text-zinc-400">
+            Maximum 5 debts supported in the prototype.
+          </p>
+        )}
       </div>
 
       {errors ? (
@@ -501,7 +505,7 @@ export function SettingsPage({ initialHousehold, initialDebts }: SettingsPagePro
           type="button"
           onClick={() => void handleSave()}
           disabled={isSubmitting}
-          className="h-10 rounded-md bg-black px-6 type-button text-white disabled:opacity-50"
+          className="h-10 rounded-md bg-[#0D3560] px-6 type-button text-white disabled:opacity-50"
         >
           {isSubmitting ? "Saving..." : "Save changes"}
         </button>
