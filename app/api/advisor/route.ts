@@ -48,7 +48,7 @@ type DebtInstrumentRow = {
   balance: number;
   apr: number;
   min_payment: number;
-  debt_type: string | null;
+  debt_type: "CARD" | "LOAN" | "BNPL" | "OVERDRAFT" | "OTHER" | null;
   is_active: boolean;
 };
 
@@ -220,6 +220,17 @@ export async function POST(request: Request) {
 
   let projectionSummary: ProjectionSummary | null = null;
   try {
+    const debtSnapshotRows = (activeDebts ?? []).map((debt) => ({
+      id: debt.id,
+      label: debt.label,
+      lender: debt.lender,
+      debt_type: debt.debt_type ?? "OTHER",
+      balance: debt.balance,
+      apr: debt.apr,
+      min_payment: debt.min_payment,
+      is_active: debt.is_active,
+    }));
+
     const snapshot = buildHouseholdSnapshot(
       {
         monthly_income: household.monthly_income,
@@ -228,16 +239,7 @@ export async function POST(request: Request) {
         buffer_balance: household.buffer_balance,
         plan_commitment_score: household.plan_commitment_score,
       },
-      (activeDebts ?? []).map((debt) => ({
-        id: debt.id,
-        label: debt.label,
-        lender: debt.lender,
-        debt_type: debt.debt_type as any,
-        balance: debt.balance,
-        apr: debt.apr,
-        min_payment: debt.min_payment,
-        is_active: debt.is_active,
-      })) as any,
+      debtSnapshotRows,
     );
     const projResult = computeProjections(snapshot);
     const snap60 = projResult.monthlySnapshots[59];

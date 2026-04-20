@@ -12,6 +12,7 @@
 
 export type HouseholdRow = {
   id: string;
+  tenant_id: string;
   display_name: string | null;
   monthly_income: number;
   income_volatility: number;
@@ -22,6 +23,7 @@ export type HouseholdRow = {
 
 export type DebtRow = {
   id: string;
+  tenant_id: string;
   label: string | null;
   lender: string | null;
   debt_type: "CARD" | "LOAN" | "BNPL" | "OVERDRAFT" | "OTHER";

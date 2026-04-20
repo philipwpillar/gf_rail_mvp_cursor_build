@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { captureEvent } from "@/lib/analytics";
+import { getCurrentTenantId } from "@/lib/server/tenant-context";
 import {
   poundsStringToPence,
   aprStringToDecimal,
@@ -163,6 +164,7 @@ export function OnboardingPage() {
           .from("household_profiles")
           .insert({
             user_id: user.id,
+            tenant_id: getCurrentTenantId(),
             display_name: step1.displayName.trim(),
             is_synthetic: false,
             monthly_income: monthlyIncome,

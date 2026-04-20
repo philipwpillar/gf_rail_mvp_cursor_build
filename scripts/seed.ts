@@ -23,6 +23,7 @@ type SeedHousehold = {
   fixed_obligations: number; // pence (excludes min payments)
   buffer_balance: number; // pence
   plan_commitment_score: number; // 0-1
+  tenant_id: string;
   debts: SeedDebt[];
 };
 
@@ -43,6 +44,7 @@ const households: SeedHousehold[] = [
     fixed_obligations: 225_500,
     buffer_balance: 90_000,
     plan_commitment_score: 0.5,
+    tenant_id: "00000000-0000-0000-0000-000000001001",
     debts: [
       {
         label: "Credit Card A (Barclaycard)",
@@ -80,6 +82,7 @@ const households: SeedHousehold[] = [
     fixed_obligations: 250_000,
     buffer_balance: 346_000,
     plan_commitment_score: 0.85,
+    tenant_id: "00000000-0000-0000-0000-000000001001",
     debts: [
       {
         label: "Car Loan (Lloyds)",
@@ -141,6 +144,7 @@ async function ensureHouseholdProfile(
     .from("household_profiles")
     .insert({
       user_id: input.user_id,
+      tenant_id: input.tenant_id,
       display_name: input.display_name,
       is_synthetic: true,
       monthly_income: input.monthly_income,
@@ -206,6 +210,7 @@ async function main() {
       fixed_obligations: h.fixed_obligations,
       buffer_balance: h.buffer_balance,
       plan_commitment_score: h.plan_commitment_score,
+      tenant_id: h.tenant_id,
     });
     await ensureDebtInstruments(supabase, householdId, h.debts);
     console.log(`Seeded: ${h.display_name} (${h.email})`);

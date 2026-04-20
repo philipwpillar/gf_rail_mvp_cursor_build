@@ -6,10 +6,12 @@ import {
   type DebtSnapshotRow,
 } from "@/lib/server/snapshot-utils";
 import { applySurplusDelta } from "@/lib/server/scenario";
+import { getCurrentTenantId } from "@/lib/server/tenant-context";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 type HouseholdRow = {
   id: string;
+  tenant_id: string;
   display_name: string | null;
   monthly_income: number;
   income_volatility: number;
@@ -56,7 +58,7 @@ async function ensureHouseholdProfile(
   const { data: existing, error: existingError } = await supabase
     .from("household_profiles")
     .select(
-      "id, display_name, monthly_income, income_volatility, fixed_obligations, buffer_balance, plan_commitment_score",
+      "id, tenant_id, display_name, monthly_income, income_volatility, fixed_obligations, buffer_balance, plan_commitment_score",
     )
     .eq("user_id", userId)
     .maybeSingle<HouseholdRow>();
@@ -69,6 +71,7 @@ async function ensureHouseholdProfile(
     .from("household_profiles")
     .insert({
       user_id: userId,
+      tenant_id: getCurrentTenantId(),
       display_name: fallbackName,
       is_synthetic: false,
       monthly_income: 0,
@@ -78,7 +81,7 @@ async function ensureHouseholdProfile(
       plan_commitment_score: 0.5,
     })
     .select(
-      "id, display_name, monthly_income, income_volatility, fixed_obligations, buffer_balance, plan_commitment_score",
+      "id, tenant_id, display_name, monthly_income, income_volatility, fixed_obligations, buffer_balance, plan_commitment_score",
     )
     .single<HouseholdRow>();
 
@@ -123,6 +126,7 @@ export async function buildRaeRecommendation({
   if (shouldWriteAudit) {
     const { error: executionError } = await supabase.from("rae_executions").insert({
       household_id: household.id,
+      tenant_id: getCurrentTenantId(),
       input_snapshot: snapshot,
       surplus: result.surplus,
       obligation_stress: result.obligationStress,

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { getCurrentTenantId } from "@/lib/server/tenant-context";
 import { Input } from "@/components/ui/input";
 import {
   poundsStringToPence,
@@ -164,6 +165,7 @@ export function SettingsPage({ initialHousehold, initialDebts }: SettingsPagePro
           .from("household_profiles")
           .insert({
             user_id: user.id,
+            tenant_id: getCurrentTenantId(),
             display_name: form.displayName.trim(),
             is_synthetic: false,
             monthly_income: monthlyIncome,
