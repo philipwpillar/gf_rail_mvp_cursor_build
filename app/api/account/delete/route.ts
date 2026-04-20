@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { getCurrentTenantId } from "@/lib/server/tenant-context";
 
 export const dynamic = "force-dynamic";
 
@@ -102,6 +103,7 @@ export async function POST(request: Request) {
     // Step 4 — write the final audit snapshot before any deletes
     const { error: auditError } = await supabase.from("session_audit_log").insert({
       user_id: user.id,
+      tenant_id: getCurrentTenantId(),
       email: user.email ?? null,
       session_end_at: new Date().toISOString(),
       household_snapshot: household ?? {},
