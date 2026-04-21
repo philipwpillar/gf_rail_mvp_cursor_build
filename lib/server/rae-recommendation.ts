@@ -1,5 +1,6 @@
 import type { HouseholdSnapshot, RAEResult } from "@/lib/rae/types";
 import { DEFAULT_POLICY } from "@/lib/rae/policy/defaults";
+import { ENGINE_VERSION } from "@/lib/api/request-context";
 import { runRAE } from "@/lib/rae/engine";
 import { computeProjections, type ProjectionResult } from "@/lib/rae/projections";
 import {
@@ -164,6 +165,72 @@ export async function buildRaeRecommendation({
     executionId = (executionRow as { id?: string } | null)?.id;
     if (executionError) {
       console.error("RAE audit insert failed:", executionError.message);
+    }
+
+    // Write allocation decision event stream.
+    // One row per non-zero allocation bucket. Non-blocking: failures
+    // are logged but never propagate to the caller.
+    // This is the data moat primitive — anonymised aggregate queries
+    // across tenants and time power Originator Rail analytics.
+    if (!executionError && executionId) {
+      const decisionRows: {
+        tenant_id: string;
+        household_id: string;
+        rae_execution_id: string;
+        decision_type: "BUFFER" | "DEBT" | "INVESTMENT";
+        amount_pence: number;
+        stage: string;
+        engine_version: string;
+        policy_version: string;
+        request_id?: string;
+      }[] = [];
+
+      const base = {
+        tenant_id: getCurrentTenantId(),
+        household_id: household.id,
+        rae_execution_id: executionId,
+        stage: result.stage as string,
+        engine_version: ENGINE_VERSION,
+        policy_version: DEFAULT_POLICY.version,
+        ...(requestId ? { request_id: requestId } : {}),
+      };
+
+      if (result.finalAllocation.bufferContribution > 0) {
+        decisionRows.push({
+          ...base,
+          decision_type: "BUFFER",
+          amount_pence: result.finalAllocation.bufferContribution,
+        });
+      }
+
+      const debtTotal = result.finalAllocation.debtAllocations.reduce(
+        (sum, d) => sum + d.amount,
+        0,
+      );
+      if (debtTotal > 0) {
+        decisionRows.push({
+          ...base,
+          decision_type: "DEBT",
+          amount_pence: debtTotal,
+        });
+      }
+
+      if (result.finalAllocation.investmentContribution > 0) {
+        decisionRows.push({
+          ...base,
+          decision_type: "INVESTMENT",
+          amount_pence: result.finalAllocation.investmentContribution,
+        });
+      }
+
+      if (decisionRows.length > 0) {
+        const { error: decisionError } = await supabase
+          .from("allocation_decisions")
+          .insert(decisionRows);
+        if (decisionError) {
+          console.error("Allocation decisions insert failed:", decisionError.message);
+        }
+      }
     }
   }
 
