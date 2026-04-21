@@ -15,7 +15,7 @@
  * Rule: zero database or network imports. Pure data only.
  */
 
-import type { RailPolicy } from "./types";
+import type { RailPolicy } from "./policy-types";
 
 export const DEFAULT_POLICY: RailPolicy = Object.freeze({
   version: "1.0.0",

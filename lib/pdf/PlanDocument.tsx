@@ -1,6 +1,6 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import type { RaeApiPayload } from "@/lib/server/rae-recommendation";
-import { PipelineStage } from "@/lib/rae/types";
+import { PipelineStage } from "@/lib/rae/engine-types";
 import { formatPounds } from "@/lib/utils";
 import { formatMoney } from "@/lib/display/money";
 

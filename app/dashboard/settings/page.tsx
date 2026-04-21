@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { SettingsPage, type DebtEntry, type HouseholdFormData } from "./settings_page";
+import { SettingsPage, type DebtEntry, type HouseholdFormData } from "./settings-page";
 
 export const dynamic = "force-dynamic";
 

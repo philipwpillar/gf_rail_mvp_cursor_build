@@ -4,20 +4,10 @@ import { cookies } from "next/headers";
 import { runRAE } from "@/lib/rae/engine";
 import { DEFAULT_POLICY } from "@/lib/rae/policy/defaults";
 import { buildHouseholdSnapshot, type DebtSnapshotRow } from "@/lib/server/snapshot-utils";
+import type { HouseholdRow } from "@/lib/server/row-types";
 import { formatPounds } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
-
-type HouseholdRow = {
-  id: string;
-  buffer_balance: number;
-  fixed_obligations: number;
-  monthly_income: number;
-  income_volatility: number;
-  plan_commitment_score: number;
-};
-
-type DebtRow = DebtSnapshotRow;
 
 type LatestExecution = {
   b_min: number;
@@ -62,7 +52,7 @@ export default async function ResiliencePage() {
     .from("debt_instruments")
     .select("id, label, lender, balance, apr, min_payment, debt_type, is_active")
     .eq("household_id", household.id)
-    .returns<DebtRow[]>();
+    .returns<DebtSnapshotRow[]>();
 
   const { data: latestExecution } = await supabase
     .from("rae_executions")

@@ -3,12 +3,12 @@ import {
   type AllocationVector,
   type HouseholdSnapshot,
   type RAEResult,
-} from "./types";
+} from "./engine-types";
 import { computeSurplus } from "./surplus";
 import { classifyStage, computeBMin, computeBTarget } from "./classifier";
 import { computeBaseAllocation, zeroAllocation } from "./allocator";
 import { applyShockAdjustment } from "./shock";
-import type { RailPolicy } from "./policy/types";
+import type { RailPolicy } from "./policy/policy-types";
 
 function formatMoneySafe(pence: number, currency?: string): string {
   const symbol = currency === "USD" ? "$" : "£";

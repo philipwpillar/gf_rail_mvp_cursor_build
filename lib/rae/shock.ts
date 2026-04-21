@@ -1,5 +1,5 @@
-import { PipelineStage, type AllocationVector } from "./types";
-import type { RailPolicy } from "./policy/types";
+import { PipelineStage, type AllocationVector } from "./engine-types";
+import type { RailPolicy } from "./policy/policy-types";
 
 export interface ShockAdjustmentResult {
   finalAllocation: AllocationVector;

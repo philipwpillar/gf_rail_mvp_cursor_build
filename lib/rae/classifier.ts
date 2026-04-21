@@ -1,5 +1,5 @@
-import { PipelineStage, type HouseholdSnapshot } from "./types";
-import type { RailPolicy } from "./policy/types";
+import { PipelineStage, type HouseholdSnapshot } from "./engine-types";
+import type { RailPolicy } from "./policy/policy-types";
 
 const WEEKS_PER_MONTH = 4.33;
 

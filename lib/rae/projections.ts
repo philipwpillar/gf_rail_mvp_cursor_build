@@ -1,6 +1,6 @@
 import { runRAE } from "./engine";
 import { DEFAULT_POLICY } from "./policy/defaults";
-import type { DebtInstrument, HouseholdSnapshot } from "./types";
+import type { DebtInstrument, HouseholdSnapshot } from "./engine-types";
 
 export interface MonthlySnapshot {
   month: number;

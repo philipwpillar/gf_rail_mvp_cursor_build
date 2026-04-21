@@ -1,4 +1,4 @@
-import type { HouseholdSnapshot } from "./types";
+import type { HouseholdSnapshot } from "./engine-types";
 
 export interface SurplusResult {
   surplus: number; // pence

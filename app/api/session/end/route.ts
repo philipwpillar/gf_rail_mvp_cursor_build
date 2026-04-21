@@ -1,27 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentTenantId } from "@/lib/server/tenant-context";
+import type { DebtRow, HouseholdRow } from "@/lib/server/row-types";
 
 export const dynamic = "force-dynamic";
-
-type HouseholdRow = {
-  id: string;
-  display_name: string | null;
-  monthly_income: number;
-  fixed_obligations: number;
-  buffer_balance: number;
-  plan_commitment_score: number;
-};
-
-type DebtRow = {
-  id: string;
-  label: string | null;
-  debt_type: string;
-  balance: number;
-  apr: number;
-  min_payment: number;
-  is_active: boolean;
-};
 
 export async function POST() {
   try {

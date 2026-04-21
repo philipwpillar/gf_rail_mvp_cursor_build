@@ -1,5 +1,5 @@
 import { computeProjections } from "@/lib/rae/projections";
-import type { HouseholdSnapshot } from "@/lib/rae/types";
+import type { HouseholdSnapshot } from "@/lib/rae/engine-types";
 
 describe("computeProjections", () => {
   it("projects Sarah & James to debt freedom and positive interest savings", () => {

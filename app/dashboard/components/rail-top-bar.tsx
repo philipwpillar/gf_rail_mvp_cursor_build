@@ -1,4 +1,4 @@
-import { PipelineStage } from "@/lib/rae/types";
+import { PipelineStage } from "@/lib/rae/engine-types";
 import { RailLogo } from "@/components/brand/RailLogo";
 import { formatMoney } from "@/lib/display/money";
 

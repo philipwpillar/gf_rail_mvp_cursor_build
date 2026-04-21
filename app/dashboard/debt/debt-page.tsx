@@ -1,23 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
-import type { DebtAllocation } from "@/lib/rae/types";
+import type { DebtAllocation } from "@/lib/rae/engine-types";
 import { buildHouseholdSnapshot, type DebtSnapshotRow } from "@/lib/server/snapshot-utils";
 import { applySurplusDelta, parseSurplusDeltaCookie } from "@/lib/server/scenario";
+import type { HouseholdRow } from "@/lib/server/row-types";
 import { formatPounds } from "@/lib/utils";
 import { cookies } from "next/headers";
-import { DebtProjectionPanel } from "./debt_projection_panel";
+import { DebtProjectionPanel } from "./debt-projection-panel";
 
 export const dynamic = "force-dynamic";
-
-type HouseholdRow = {
-  id: string;
-  monthly_income: number;
-  income_volatility: number;
-  fixed_obligations: number;
-  buffer_balance: number;
-  plan_commitment_score: number;
-};
-
-type DebtRow = DebtSnapshotRow;
 
 type LatestExecution = {
   final_debt_allocations: DebtAllocation[] | null;
@@ -60,7 +50,7 @@ export default async function DebtPage() {
     .eq("household_id", household.id)
     .eq("is_active", true)
     .order("apr", { ascending: false })
-    .returns<DebtRow[]>();
+    .returns<DebtSnapshotRow[]>();
 
   const { data: latestExecution } = await supabase
     .from("rae_executions")

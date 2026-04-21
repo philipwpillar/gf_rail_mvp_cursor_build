@@ -8,23 +8,14 @@ import { buildHouseholdSnapshot, type DebtSnapshotRow } from "@/lib/server/snaps
 import { applySurplusDelta } from "@/lib/server/scenario";
 import { runRAE } from "@/lib/rae/engine";
 import { DEFAULT_POLICY } from "@/lib/rae/policy/defaults";
-import { type PipelineStage } from "@/lib/rae/types";
+import { type PipelineStage } from "@/lib/rae/engine-types";
+import type { HouseholdRow } from "@/lib/server/row-types";
 import type { ReactNode } from "react";
 
 export const dynamic = "force-dynamic";
 
 type DashboardLayoutProps = {
   children: ReactNode;
-};
-
-type HouseholdRow = {
-  id: string;
-  display_name: string | null;
-  monthly_income: number;
-  income_volatility: number;
-  fixed_obligations: number;
-  buffer_balance: number;
-  plan_commitment_score: number;
 };
 
 export default async function DashboardLayout({ children }: DashboardLayoutProps) {

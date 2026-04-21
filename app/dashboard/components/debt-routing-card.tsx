@@ -1,6 +1,6 @@
 "use client";
 
-import type { DebtAllocation } from "@/lib/rae/types";
+import type { DebtAllocation } from "@/lib/rae/engine-types";
 import { formatPounds } from "@/lib/utils";
 
 type DebtContext = {

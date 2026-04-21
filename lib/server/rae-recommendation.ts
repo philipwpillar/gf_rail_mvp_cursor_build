@@ -1,5 +1,5 @@
-import type { HouseholdSnapshot, RAEResult } from "@/lib/rae/types";
-import { PipelineStage } from "@/lib/rae/types";
+import type { HouseholdSnapshot, RAEResult } from "@/lib/rae/engine-types";
+import { PipelineStage } from "@/lib/rae/engine-types";
 import { DEFAULT_POLICY } from "@/lib/rae/policy/defaults";
 import { ENGINE_VERSION } from "@/lib/api/request-context";
 import { runRAE } from "@/lib/rae/engine";
@@ -9,24 +9,9 @@ import {
   type DebtSnapshotRow,
 } from "@/lib/server/snapshot-utils";
 import { applySurplusDelta } from "@/lib/server/scenario";
+import type { HouseholdRow } from "@/lib/server/row-types";
 import { getCurrentTenantId } from "@/lib/server/tenant-context";
 import type { SupabaseClient } from "@supabase/supabase-js";
-
-type HouseholdRow = {
-  id: string;
-  tenant_id: string;
-  display_name: string | null;
-  monthly_income: number;
-  income_volatility: number;
-  fixed_obligations: number;
-  buffer_balance: number;
-  plan_commitment_score: number;
-  currency: string;
-  region: string;
-  has_graduated_from_credit: boolean;
-};
-
-type DebtRow = DebtSnapshotRow;
 
 export type RaeApiPayload = {
   result: RAEResult;
@@ -116,7 +101,7 @@ export async function buildRaeRecommendation({
     .from("debt_instruments")
     .select("id, label, lender, debt_type, balance, apr, min_payment, is_active")
     .eq("household_id", household.id)
-    .returns<DebtRow[]>();
+    .returns<DebtSnapshotRow[]>();
 
   if (debtError) throw new Error("Failed to load debt instruments.");
 

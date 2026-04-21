@@ -1,5 +1,5 @@
 /**
- * contracts/types.ts
+ * contracts/api-types.ts
  *
  * TypeScript types derived from contracts/openapi.yaml.
  *
@@ -9,7 +9,7 @@
  * Consumers: app/api/v1/rae/route.ts (producer), any future test client.
  */
 
-import type { RAEResult } from "@/lib/rae/types";
+import type { RAEResult } from "@/lib/rae/engine-types";
 import type { ProjectionResult } from "@/lib/rae/projections";
 import type { RaeApiPayload } from "@/lib/server/rae-recommendation";
 

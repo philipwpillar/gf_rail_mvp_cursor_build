@@ -2,8 +2,8 @@ import {
   PipelineStage,
   type AllocationVector,
   type HouseholdSnapshot,
-} from "./types";
-import type { RailPolicy } from "./policy/types";
+} from "./engine-types";
+import type { RailPolicy } from "./policy/policy-types";
 
 export function zeroAllocation(): AllocationVector {
   return {

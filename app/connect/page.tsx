@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { ConnectPage } from "./connect_page";
+import { ConnectPage } from "./connect-page";
 
 export const dynamic = "force-dynamic";
 

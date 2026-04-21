@@ -1,2 +1,2 @@
-export { default } from "./login_page";
+export { default } from "./login-page";
 

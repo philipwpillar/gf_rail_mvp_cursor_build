@@ -1,6 +1,6 @@
 import { runRAE } from "@/lib/rae/engine";
 import { DEFAULT_POLICY } from "@/lib/rae/policy/defaults";
-import { PipelineStage, type HouseholdSnapshot } from "@/lib/rae/types";
+import { PipelineStage, type HouseholdSnapshot } from "@/lib/rae/engine-types";
 
 describe("runRAE seeded households", () => {
   it("matches Sarah & James Stage 1 allocation", () => {

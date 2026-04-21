@@ -2,26 +2,16 @@ import { createClient } from "@/lib/supabase/server";
 import { computeProjections } from "@/lib/rae/projections";
 import { runRAE } from "@/lib/rae/engine";
 import { DEFAULT_POLICY } from "@/lib/rae/policy/defaults";
-import { PipelineStage } from "@/lib/rae/types";
+import { PipelineStage } from "@/lib/rae/engine-types";
 import { buildHouseholdSnapshot, type DebtSnapshotRow } from "@/lib/server/snapshot-utils";
 import { applySurplusDelta, parseSurplusDeltaCookie } from "@/lib/server/scenario";
+import type { HouseholdRow } from "@/lib/server/row-types";
 import { formatPounds } from "@/lib/utils";
 import { formatMoney } from "@/lib/display/money";
 import { OwnershipClient } from "@/components/ownership/OwnershipClient";
 import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
-
-type HouseholdRow = {
-  id: string;
-  monthly_income: number;
-  income_volatility: number;
-  fixed_obligations: number;
-  buffer_balance: number;
-  plan_commitment_score: number;
-};
-
-type DebtRow = DebtSnapshotRow;
 
 type LatestExecution = {
   final_investment_contribution: number;
@@ -64,7 +54,7 @@ export default async function OwnershipPage() {
     .select("id, label, lender, balance, apr, min_payment, debt_type, is_active")
     .eq("household_id", household.id)
     .eq("is_active", true)
-    .returns<DebtRow[]>();
+    .returns<DebtSnapshotRow[]>();
 
   const { data: latestExecution } = await supabase
     .from("rae_executions")

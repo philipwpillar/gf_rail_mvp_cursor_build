@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "./sidebar";
 import { RailTopBar } from "./rail-top-bar";
-import { PipelineStage } from "@/lib/rae/types";
+import { PipelineStage } from "@/lib/rae/engine-types";
 import { formatPounds } from "@/lib/utils";
 import { RailLogo } from "@/components/brand/RailLogo";
 

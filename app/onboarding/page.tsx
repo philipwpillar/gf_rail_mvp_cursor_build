@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { OnboardingPage } from "./onboarding_page";
+import { OnboardingPage } from "./onboarding-page";
 
 export const dynamic = "force-dynamic";
 

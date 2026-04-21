@@ -1,4 +1,4 @@
-import type { DebtInstrument, HouseholdSnapshot } from "@/lib/rae/types";
+import type { DebtInstrument, HouseholdSnapshot } from "@/lib/rae/engine-types";
 
 export type HouseholdSnapshotRow = {
   monthly_income: number;

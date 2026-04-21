@@ -1,3 +1,3 @@
 export const dynamic = "force-dynamic";
-export { default } from "./resilience_page";
+export { default } from "./resilience-page";
 

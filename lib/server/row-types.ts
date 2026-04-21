@@ -46,6 +46,6 @@ export type LatestExecutionRow = {
   base_investment_contribution: number | null;
   final_buffer_contribution: number | null;
   final_investment_contribution: number | null;
-  final_debt_allocations: import("@/lib/rae/types").DebtAllocation[] | null;
+  final_debt_allocations: import("@/lib/rae/engine-types").DebtAllocation[] | null;
   rationale: unknown;
 };

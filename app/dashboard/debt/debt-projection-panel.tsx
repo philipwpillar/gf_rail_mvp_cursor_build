@@ -5,7 +5,7 @@ import { Info } from "lucide-react";
 import { computeProjections } from "@/lib/rae/projections";
 import { runRAE } from "@/lib/rae/engine";
 import { DEFAULT_POLICY } from "@/lib/rae/policy/defaults";
-import type { HouseholdSnapshot } from "@/lib/rae/types";
+import type { HouseholdSnapshot } from "@/lib/rae/engine-types";
 import type { DebtSnapshotRow } from "@/lib/server/snapshot-utils";
 import { formatPounds } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";

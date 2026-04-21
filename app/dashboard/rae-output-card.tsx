@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PipelineStage, type RAEResult } from "@/lib/rae/types";
+import { PipelineStage, type RAEResult } from "@/lib/rae/engine-types";
 import { AllocationChart } from "./components/allocation-chart";
 import { DebtRoutingCard } from "./components/debt-routing-card";
 import { ProjectionsPanel } from "./components/projections-panel";
