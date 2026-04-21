@@ -1,0 +1,141 @@
+openapi: 3.0.3
+
+info:
+  title: Rail Allocation Engine API
+  version: 1.0.0
+  description: >
+    The Rail Allocation Engine (RAE) computes surplus, classifies
+    pipeline stage, and returns an allocation recommendation for a
+    household. Read-only. No money moves.
+
+servers:
+  - url: /api/v1
+    description: Current version
+
+paths:
+  /rae:
+    get:
+      summary: Compute RAE recommendation for the authenticated household
+      operationId: getRaeRecommendation
+      parameters:
+        - in: header
+          name: X-Request-Id
+          schema:
+            type: string
+            format: uuid
+          required: false
+          description: >
+            Client-supplied request ID. Echoed in response header and meta.
+            Server generates one if absent.
+        - in: header
+          name: Idempotency-Key
+          schema:
+            type: string
+          required: false
+          description: >
+            Optional. If provided, the response is cached for 24 hours.
+            Duplicate requests within TTL return the cached response
+            without writing a new rae_executions row.
+      responses:
+        "200":
+          description: Successful recommendation
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+                format: uuid
+            X-Idempotency-Cache:
+              schema:
+                type: string
+                enum: [HIT]
+              description: Present only when response was served from cache
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RaeResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Engine error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    RaeResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [result, decision_id]
+          properties:
+            result:
+              $ref: "#/components/schemas/RAEResult"
+            decision_id:
+              type: string
+              format: uuid
+              nullable: true
+              description: ID of the rae_executions audit row for this recommendation
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
+    ErrorResponse:
+      type: object
+      required: [error, meta]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              example: ENGINE_ERROR
+            message:
+              type: string
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
+    ResponseMeta:
+      type: object
+      required: [request_id, engine_version, policy_version]
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        engine_version:
+          type: string
+          example: "0.1.0"
+        policy_version:
+          type: string
+          example: "default-v1"
+
+    RAEResult:
+      type: object
+      description: >
+        Full allocation result from the Rail Allocation Engine.
+        All monetary values are integers in pence.
+      properties:
+        surplus:
+          type: integer
+          description: Discretionary surplus in pence
+        stage:
+          type: string
+          enum:
+            - STAGE_1_RESILIENCE
+            - STAGE_2_DEBT
+            - STAGE_3_OWNERSHIP
+        obligationStress:
+          type: boolean
+        bMin:
+          type: integer
+        bTarget:
+          type: integer
+        rationale:
+          type: string

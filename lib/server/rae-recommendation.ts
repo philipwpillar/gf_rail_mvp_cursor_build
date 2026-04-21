@@ -41,6 +41,8 @@ export type RaeApiPayload = {
   meta: {
     auditLogged: boolean;
     profileBootstrapped: boolean;
+    /** ID of the rae_executions row written for this recommendation. */
+    executionId?: string;
   };
 };
 
@@ -50,6 +52,7 @@ type BuildRaeRecommendationInput = {
   userEmail?: string | null;
   writeAudit: boolean;
   surplusDeltaPence?: number;
+  requestId?: string;
 };
 
 async function ensureHouseholdProfile(
@@ -97,6 +100,7 @@ export async function buildRaeRecommendation({
   userEmail,
   writeAudit,
   surplusDeltaPence = 0,
+  requestId,
 }: BuildRaeRecommendationInput): Promise<RaeApiPayload> {
   const { household, profileBootstrapped } = await ensureHouseholdProfile(
     supabase,
@@ -125,30 +129,37 @@ export async function buildRaeRecommendation({
   // Compliance guard: only baseline recommendations are written to immutable audit logs.
   const shouldWriteAudit = writeAudit && surplusDeltaPence === 0;
   let auditLogged = false;
+  let executionId: string | undefined;
   if (shouldWriteAudit) {
-    const { error: executionError } = await supabase.from("rae_executions").insert({
-      household_id: household.id,
-      tenant_id: getCurrentTenantId(),
-      input_snapshot: snapshot,
-      surplus: result.surplus,
-      obligation_stress: result.obligationStress,
-      stage: result.stage,
-      b_min: result.bMin,
-      b_target: result.bTarget,
-      base_buffer_contribution: result.baseAllocation.bufferContribution,
-      base_investment_contribution: result.baseAllocation.investmentContribution,
-      base_debt_allocations: result.baseAllocation.debtAllocations,
-      p_shock_used: result.pShockUsed,
-      shock_threshold_used: DEFAULT_RAE_CONFIG.shockThreshold,
-      shock_applied: result.shockApplied,
-      shock_factor: result.shockFactor,
-      shock_redirect_amount: result.shockRedirectAmount,
-      final_buffer_contribution: result.finalAllocation.bufferContribution,
-      final_investment_contribution: result.finalAllocation.investmentContribution,
-      final_debt_allocations: result.finalAllocation.debtAllocations,
-      rationale: result.rationale,
-    });
+    const { data: executionRow, error: executionError } = await supabase
+      .from("rae_executions")
+      .insert({
+        household_id: household.id,
+        tenant_id: getCurrentTenantId(),
+        input_snapshot: snapshot,
+        surplus: result.surplus,
+        obligation_stress: result.obligationStress,
+        stage: result.stage,
+        b_min: result.bMin,
+        b_target: result.bTarget,
+        base_buffer_contribution: result.baseAllocation.bufferContribution,
+        base_investment_contribution: result.baseAllocation.investmentContribution,
+        base_debt_allocations: result.baseAllocation.debtAllocations,
+        p_shock_used: result.pShockUsed,
+        shock_threshold_used: DEFAULT_RAE_CONFIG.shockThreshold,
+        shock_applied: result.shockApplied,
+        shock_factor: result.shockFactor,
+        shock_redirect_amount: result.shockRedirectAmount,
+        final_buffer_contribution: result.finalAllocation.bufferContribution,
+        final_investment_contribution: result.finalAllocation.investmentContribution,
+        final_debt_allocations: result.finalAllocation.debtAllocations,
+        rationale: result.rationale,
+        ...(requestId ? { request_id: requestId } : {}),
+      })
+      .select("id")
+      .single();
     auditLogged = !executionError;
+    executionId = (executionRow as { id?: string } | null)?.id;
     if (executionError) {
       console.error("RAE audit insert failed:", executionError.message);
     }
@@ -168,6 +179,6 @@ export async function buildRaeRecommendation({
         isActive: debt.is_active,
       })),
     },
-    meta: { auditLogged, profileBootstrapped },
+    meta: { auditLogged, profileBootstrapped, executionId },
   };
 }
