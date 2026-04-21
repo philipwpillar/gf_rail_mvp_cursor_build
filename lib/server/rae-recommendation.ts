@@ -1,4 +1,5 @@
 import type { HouseholdSnapshot, RAEResult } from "@/lib/rae/types";
+import { PipelineStage } from "@/lib/rae/types";
 import { DEFAULT_POLICY } from "@/lib/rae/policy/defaults";
 import { ENGINE_VERSION } from "@/lib/api/request-context";
 import { runRAE } from "@/lib/rae/engine";
@@ -22,6 +23,7 @@ type HouseholdRow = {
   plan_commitment_score: number;
   currency: string;
   region: string;
+  has_graduated_from_credit: boolean;
 };
 
 type DebtRow = DebtSnapshotRow;
@@ -65,7 +67,7 @@ async function ensureHouseholdProfile(
   const { data: existing, error: existingError } = await supabase
     .from("household_profiles")
     .select(
-      "id, tenant_id, display_name, monthly_income, income_volatility, fixed_obligations, buffer_balance, plan_commitment_score, currency, region",
+      "id, tenant_id, display_name, monthly_income, income_volatility, fixed_obligations, buffer_balance, plan_commitment_score, currency, region, has_graduated_from_credit",
     )
     .eq("user_id", userId)
     .maybeSingle<HouseholdRow>();
@@ -88,7 +90,7 @@ async function ensureHouseholdProfile(
       plan_commitment_score: 0.5,
     })
     .select(
-      "id, tenant_id, display_name, monthly_income, income_volatility, fixed_obligations, buffer_balance, plan_commitment_score, currency, region",
+      "id, tenant_id, display_name, monthly_income, income_volatility, fixed_obligations, buffer_balance, plan_commitment_score, currency, region, has_graduated_from_credit",
     )
     .single<HouseholdRow>();
 
@@ -125,7 +127,20 @@ export async function buildRaeRecommendation({
 
   const snapshot: HouseholdSnapshot = buildHouseholdSnapshot(scenarioAdjustedHousehold, debtRows ?? []);
 
-  const result = runRAE(snapshot, DEFAULT_POLICY);
+  // One-and-done credit rule (ADR 006): if this household has previously
+  // graduated from credit, the engine result is post-processed to lock
+  // the stage to STAGE_3_OWNERSHIP regardless of current debt state.
+  // This is structural enforcement - not a UI hint, not a suggestion.
+  const rawResult = runRAE(snapshot, DEFAULT_POLICY);
+  const result = household.has_graduated_from_credit
+    ? {
+        ...rawResult,
+        stage: PipelineStage.STAGE_3_OWNERSHIP,
+        rationale:
+          rawResult.rationale +
+          " [Credit graduation: stage locked to Ownership per one-and-done rule.]",
+      }
+    : rawResult;
   const projections = computeProjections(snapshot);
 
   // Compliance guard: only baseline recommendations are written to immutable audit logs.

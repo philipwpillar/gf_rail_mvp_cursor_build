@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { captureEvent } from "@/lib/analytics";
+import { writeInitialConsent } from "@/lib/server/consent";
 import { getCurrentTenantId } from "@/lib/server/tenant-context";
 import {
   poundsStringToPence,
@@ -179,6 +180,10 @@ export function OnboardingPage() {
           throw new Error("Failed to create household profile.");
         }
         householdId = inserted.id;
+
+        // Write initial consent records for the new household.
+        // Non-blocking: consent failure does not abort onboarding.
+        await writeInitialConsent(supabase, householdId);
       }
 
       const { error: deleteDebtError } = await supabase

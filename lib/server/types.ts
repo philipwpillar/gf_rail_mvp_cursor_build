@@ -21,6 +21,7 @@ export type HouseholdRow = {
   plan_commitment_score: number;
   currency: string;
   region: string;
+  has_graduated_from_credit: boolean;
 };
 
 export type DebtRow = {
