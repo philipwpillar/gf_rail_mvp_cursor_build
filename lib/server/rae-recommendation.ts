@@ -18,6 +18,8 @@ type HouseholdRow = {
   fixed_obligations: number;
   buffer_balance: number;
   plan_commitment_score: number;
+  currency: string;
+  region: string;
 };
 
 type DebtRow = DebtSnapshotRow;
@@ -58,7 +60,7 @@ async function ensureHouseholdProfile(
   const { data: existing, error: existingError } = await supabase
     .from("household_profiles")
     .select(
-      "id, tenant_id, display_name, monthly_income, income_volatility, fixed_obligations, buffer_balance, plan_commitment_score",
+      "id, tenant_id, display_name, monthly_income, income_volatility, fixed_obligations, buffer_balance, plan_commitment_score, currency, region",
     )
     .eq("user_id", userId)
     .maybeSingle<HouseholdRow>();
@@ -81,7 +83,7 @@ async function ensureHouseholdProfile(
       plan_commitment_score: 0.5,
     })
     .select(
-      "id, tenant_id, display_name, monthly_income, income_volatility, fixed_obligations, buffer_balance, plan_commitment_score",
+      "id, tenant_id, display_name, monthly_income, income_volatility, fixed_obligations, buffer_balance, plan_commitment_score, currency, region",
     )
     .single<HouseholdRow>();
 

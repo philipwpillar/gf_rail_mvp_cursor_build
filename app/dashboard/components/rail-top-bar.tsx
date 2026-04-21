@@ -1,5 +1,6 @@
 import { PipelineStage } from "@/lib/rae/types";
 import { RailLogo } from "@/components/brand/RailLogo";
+import { formatMoney } from "@/lib/display/money";
 
 type RailTopBarProps = {
   householdName: string;
@@ -97,7 +98,8 @@ export function RailTopBar({ householdName, stage, surplus }: RailTopBarProps) {
         {surplus !== null ? (
           <div className="flex flex-col items-end leading-tight bg-[#20E2D7]/15 border border-[#20E2D7]/30 rounded-full px-3 py-1">
             <span className="text-[9px] uppercase tracking-[0.08em] text-[#20E2D7]">Surplus</span>
-            <span className="text-[14px] font-semibold text-white">£{(surplus / 100).toFixed(0)}/mo</span>
+            {/* TODO: thread currency prop from household context when multi-currency goes live */}
+            <span className="text-[14px] font-semibold text-white">{formatMoney(surplus, "GBP", { decimals: 0 })}/mo</span>
           </div>
         ) : (
           <div className="w-20 h-8 rounded-full bg-white/10 animate-pulse" />

@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import type { MinimumOnlyMonthlySnapshot, MonthlySnapshot } from "@/lib/rae/projections";
 import { formatPounds } from "@/lib/utils";
+import { formatMoney } from "@/lib/display/money";
 
 type ProjectionsPanelProps = {
   debtFreeMonth: number | null;
@@ -75,9 +76,10 @@ export function ProjectionsPanel({
           <LineChart data={chartData}>
             <CartesianGrid stroke="#e4e4e7" strokeDasharray="3 3" />
             <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-            <YAxis tick={{ fontSize: 11 }} tickFormatter={(value: number) => `£${value.toFixed(0)}`} />
+            {/* TODO: thread currency prop when multi-currency goes live */}
+            <YAxis tick={{ fontSize: 11 }} tickFormatter={(value: number) => formatMoney(value, "GBP", { decimals: 0 })} />
             <Tooltip
-              formatter={(value: number) => `£${value.toFixed(2)}`}
+              formatter={(value: number) => formatMoney(value, "GBP")}
               labelFormatter={(label: number) => `Month ${label}`}
             />
             <Line

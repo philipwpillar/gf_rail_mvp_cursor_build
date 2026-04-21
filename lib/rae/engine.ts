@@ -9,8 +9,9 @@ import { classifyStage, computeBMin, computeBTarget } from "./classifier";
 import { computeBaseAllocation, zeroAllocation } from "./allocator";
 import { applyShockAdjustment } from "./shock";
 
-function formatPounds(pence: number): string {
-  return `£${(pence / 100).toFixed(2)}`;
+function formatMoneySafe(pence: number, currency?: string): string {
+  const symbol = currency === "USD" ? "$" : "£";
+  return `${symbol}${(pence / 100).toFixed(2)}`;
 }
 
 function stageLabel(stage: PipelineStage): string {
@@ -28,6 +29,7 @@ function stageLabel(stage: PipelineStage): string {
 
 function buildRationale(
   stage: PipelineStage,
+  snapshot: HouseholdSnapshot,
   surplus: number,
   baseAllocation: AllocationVector,
   shockApplied: boolean,
@@ -36,18 +38,18 @@ function buildRationale(
   const parts: string[] = [];
 
   parts.push(
-    `Current stage: ${stageLabel(stage)}. Available monthly surplus is ${formatPounds(surplus)}.`,
+    `Current stage: ${stageLabel(stage)}. Available monthly surplus is ${formatMoneySafe(surplus, snapshot.currency)}.`,
   );
 
   const debtTotal = baseAllocation.debtAllocations.reduce((sum, d) => sum + d.amount, 0);
   if (baseAllocation.bufferContribution > 0) {
-    parts.push(`Buffer allocation: ${formatPounds(baseAllocation.bufferContribution)}.`);
+    parts.push(`Buffer allocation: ${formatMoneySafe(baseAllocation.bufferContribution, snapshot.currency)}.`);
   }
   if (debtTotal > 0) {
-    parts.push(`Debt allocation: ${formatPounds(debtTotal)}.`);
+    parts.push(`Debt allocation: ${formatMoneySafe(debtTotal, snapshot.currency)}.`);
   }
   if (baseAllocation.investmentContribution > 0) {
-    parts.push(`Investment allocation: ${formatPounds(baseAllocation.investmentContribution)}.`);
+    parts.push(`Investment allocation: ${formatMoneySafe(baseAllocation.investmentContribution, snapshot.currency)}.`);
   }
   if (
     baseAllocation.bufferContribution === 0 &&
@@ -59,8 +61,9 @@ function buildRationale(
 
   if (shockApplied && shockRedirectAmount > 0) {
     parts.push(
-      `Income-shock risk is elevated; ${formatPounds(
+      `Income-shock risk is elevated; ${formatMoneySafe(
         shockRedirectAmount,
+        snapshot.currency,
       )} was redirected to buffer protection.`,
     );
   }
@@ -114,6 +117,7 @@ export function runRAE(snapshot: HouseholdSnapshot): RAEResult {
     shockRedirectAmount: shockResult.shockApplied ? shockResult.shockRedirectAmount : null,
     rationale: buildRationale(
       stage,
+      snapshot,
       surplus,
       baseAllocation,
       shockResult.shockApplied,

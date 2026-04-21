@@ -39,6 +39,8 @@ type HouseholdProfileRow = {
   fixed_obligations: number;
   buffer_balance: number;
   plan_commitment_score: number;
+  currency?: string;
+  region?: string;
 };
 
 type DebtInstrumentRow = {
@@ -84,7 +86,7 @@ function buildSystemPromptPreamble(context: {
       active_debt_instruments: context.debts,
       latest_rae_execution: context.latestExecution,
       projections: context.projections,
-      currency: "GBP",
+      currency: context.household.currency ?? "GBP",
       amounts_are_in: "pence",
     },
     null,
@@ -175,7 +177,7 @@ export async function POST(request: Request) {
   } = await supabase
     .from("household_profiles")
     .select(
-      "id, user_id, display_name, monthly_income, income_volatility, fixed_obligations, buffer_balance, plan_commitment_score",
+      "id, user_id, display_name, monthly_income, income_volatility, fixed_obligations, buffer_balance, plan_commitment_score, currency, region",
     )
     .eq("id", householdId)
     .eq("user_id", user.id)

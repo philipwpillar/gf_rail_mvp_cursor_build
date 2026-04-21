@@ -19,6 +19,8 @@ export type HouseholdRow = {
   fixed_obligations: number;
   buffer_balance: number;
   plan_commitment_score: number;
+  currency: string;
+  region: string;
 };
 
 export type DebtRow = {

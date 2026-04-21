@@ -1,15 +1,17 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+import { formatMoney } from '@/lib/display/money';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 // ─── Money formatting ──────────────────────────────────────────────────────
-// Canonical display-layer formatter. All pence values divide here.
-// Used across dashboard pages, PDFs, and form components.
+// formatPounds is the backward-compatible GBP wrapper around formatMoney.
+// All existing callers of formatPounds continue to work unchanged.
+// New code should call formatMoney(pence, currency) directly.
 export function formatPounds(pence: number): string {
-  return `£${(pence / 100).toFixed(2)}`;
+  return formatMoney(pence, 'GBP');
 }
 
 // ─── Form input parsers ────────────────────────────────────────────────────

@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { formatMoney } from "@/lib/display/money";
 
 type ProjectionPoint = {
   month: number;
@@ -20,8 +21,9 @@ type ProjectionChartProps = {
   lineColour?: string;
 };
 
+// TODO: accept currency prop when multi-currency goes live
 function formatPoundsFromPence(pence: number): string {
-  return `£${(pence / 100).toFixed(0)}`;
+  return formatMoney(pence, "GBP", { decimals: 0 });
 }
 
 export function ProjectionChart({ data, lineColour = "#10b981" }: ProjectionChartProps) {

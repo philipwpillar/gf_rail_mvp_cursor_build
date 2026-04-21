@@ -2,6 +2,7 @@ import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import type { RaeApiPayload } from "@/lib/server/rae-recommendation";
 import { PipelineStage } from "@/lib/rae/types";
 import { formatPounds } from "@/lib/utils";
+import { formatMoney } from "@/lib/display/money";
 
 type PlanDocumentProps = {
   payload: RaeApiPayload;
@@ -166,8 +167,9 @@ export function PlanDocument({ payload }: PlanDocumentProps) {
           </Text>
           {payload.result.finalAllocation.investmentContribution === 0 ? (
             <Text style={{ ...styles.label, fontSize: 9, marginTop: 2 }}>
-              Based on projected contribution of £
-              {(monthlyInvestmentContribution / 100).toFixed(0)}
+              {/* TODO: pass currency from payload when multi-currency goes live */}
+              Based on projected contribution of{" "}
+              {formatMoney(monthlyInvestmentContribution, "GBP", { decimals: 0 })}
               /month after debt clearance.
             </Text>
           ) : null}

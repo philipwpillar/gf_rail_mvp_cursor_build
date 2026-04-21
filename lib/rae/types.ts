@@ -25,6 +25,10 @@ export interface HouseholdSnapshot {
   planCommitmentScore: number;
   incomeShockProbability: number;
   debts: DebtInstrument[];
+  /** ISO currency code, e.g. 'GBP' or 'USD'. Defaults to 'GBP' if absent. */
+  currency?: string;
+  /** ISO region code, e.g. 'GB' or 'US'. Defaults to 'GB' if absent. */
+  region?: string;
 }
 
 export interface DebtAllocation {

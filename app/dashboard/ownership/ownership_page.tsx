@@ -5,6 +5,7 @@ import { PipelineStage } from "@/lib/rae/types";
 import { buildHouseholdSnapshot, type DebtSnapshotRow } from "@/lib/server/snapshot-utils";
 import { applySurplusDelta, parseSurplusDeltaCookie } from "@/lib/server/scenario";
 import { formatPounds } from "@/lib/utils";
+import { formatMoney } from "@/lib/display/money";
 import { OwnershipClient } from "@/components/ownership/OwnershipClient";
 import { cookies } from "next/headers";
 
@@ -105,8 +106,9 @@ export default async function OwnershipPage() {
             <p className="font-medium">Not yet active</p>
             <p>Once your buffer is funded and high-rate debt is cleared, your surplus flows here.</p>
             <p>
-              Once active, Rail estimates you will invest approximately £
-              {(projectedMonthlyContributionPence / 100).toFixed(0)}/month.
+              {/* TODO: thread currency from household row when multi-currency goes live */}
+              Once active, Rail estimates you will invest approximately{" "}
+              {formatMoney(projectedMonthlyContributionPence, "GBP", { decimals: 0 })}/month.
             </p>
             <p>
               Estimated activation:{" "}

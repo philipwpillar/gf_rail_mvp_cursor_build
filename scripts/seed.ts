@@ -18,12 +18,14 @@ type SeedHousehold = {
   email: string;
   password: string;
   display_name: string;
-  monthly_income: number; // pence
-  income_volatility: number; // pence
-  fixed_obligations: number; // pence (excludes min payments)
-  buffer_balance: number; // pence
+  monthly_income: number; // pence/cents
+  income_volatility: number; // pence/cents
+  fixed_obligations: number; // pence/cents (excludes min payments)
+  buffer_balance: number; // pence/cents
   plan_commitment_score: number; // 0-1
   tenant_id: string;
+  region: string;
+  currency: string;
   debts: SeedDebt[];
 };
 
@@ -45,6 +47,8 @@ const households: SeedHousehold[] = [
     buffer_balance: 90_000,
     plan_commitment_score: 0.5,
     tenant_id: "00000000-0000-0000-0000-000000001001",
+    region: "GB",
+    currency: "GBP",
     debts: [
       {
         label: "Credit Card A (Barclaycard)",
@@ -83,6 +87,8 @@ const households: SeedHousehold[] = [
     buffer_balance: 346_000,
     plan_commitment_score: 0.85,
     tenant_id: "00000000-0000-0000-0000-000000001001",
+    region: "GB",
+    currency: "GBP",
     debts: [
       {
         label: "Car Loan (Lloyds)",
@@ -91,6 +97,30 @@ const households: SeedHousehold[] = [
         balance: 420_000,
         apr: 0.0590,
         min_payment: 9_500,
+      },
+    ],
+  },
+  {
+    // Household 3 — US region validation household (Stage B)
+    email: "alex.morgan+synthetic@rail-prototype.local",
+    password: "RailPrototype!234",
+    display_name: "Alex & Morgan",
+    monthly_income: 520_000, // $5,200/mo in cents
+    income_volatility: 0,
+    fixed_obligations: 380_000, // $3,800/mo in cents
+    buffer_balance: 120_000, // $1,200 in cents
+    plan_commitment_score: 0.65,
+    tenant_id: "00000000-0000-0000-0000-000000001001",
+    region: "US",
+    currency: "USD",
+    debts: [
+      {
+        label: "Credit Card (Chase)",
+        lender: "Chase",
+        debt_type: "CARD" as const,
+        balance: 340_000, // $3,400
+        apr: 0.2299,
+        min_payment: 6_800, // $68/mo minimum
       },
     ],
   },
@@ -152,6 +182,8 @@ async function ensureHouseholdProfile(
       fixed_obligations: input.fixed_obligations,
       buffer_balance: input.buffer_balance,
       plan_commitment_score: input.plan_commitment_score,
+      region: input.region,
+      currency: input.currency,
     })
     .select("id")
     .single();
@@ -211,6 +243,8 @@ async function main() {
       buffer_balance: h.buffer_balance,
       plan_commitment_score: h.plan_commitment_score,
       tenant_id: h.tenant_id,
+      region: h.region,
+      currency: h.currency,
     });
     await ensureDebtInstruments(supabase, householdId, h.debts);
     console.log(`Seeded: ${h.display_name} (${h.email})`);

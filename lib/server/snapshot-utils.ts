@@ -6,6 +6,8 @@ export type HouseholdSnapshotRow = {
   fixed_obligations: number;
   buffer_balance: number;
   plan_commitment_score: number;
+  currency?: string;
+  region?: string;
 };
 
 export type DebtSnapshotRow = {
@@ -52,5 +54,7 @@ export function buildHouseholdSnapshot(
       household.income_volatility,
     ),
     debts: mapDebtRowsToInstruments(debtRows),
+    currency: household.currency ?? "GBP",
+    region: household.region ?? "GB",
   };
 }

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FundSelector } from "@/components/ownership/FundSelector";
 import { ProjectionChart } from "@/components/ownership/ProjectionChart";
+import { formatMoney } from "@/lib/display/money";
 
 type OwnershipClientProps = {
   monthlyContributionPence: number;
@@ -58,7 +59,8 @@ export function OwnershipClient({
           <ProjectionChart data={projectionData} lineColour={selectedFund.colour} />
           {monthlyContributionPence === 0 && projectedMonthlyContributionPence > 0 ? (
             <p className="type-caption text-zinc-500 mt-2">
-              Projection based on estimated £{(projectedMonthlyContributionPence / 100).toFixed(0)}/month
+              {/* TODO: thread currency prop when multi-currency goes live */}
+              Projection based on estimated {formatMoney(projectedMonthlyContributionPence, "GBP", { decimals: 0 })}/month
               contribution once buffer is funded and debt is cleared.
             </p>
           ) : null}
