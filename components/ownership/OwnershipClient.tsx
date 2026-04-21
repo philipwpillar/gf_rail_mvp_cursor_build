@@ -29,6 +29,24 @@ export function OwnershipClient({
       ? monthlyContributionPence
       : projectedMonthlyContributionPence;
 
+  // Shared Y-axis ceiling: highest Year-20 value across all funds, rounded up to the nearest
+  // £100,000 (in pence). This keeps the scale identical as the user switches fund cards.
+  const sharedYAxisMax = useMemo(() => {
+    // Compute Year-20 pot for a given annual return rate — used to derive the shared Y-axis ceiling.
+    const computeYear20Value = (annualReturn: number): number => {
+      const monthlyRate = Math.pow(1 + annualReturn, 1 / 12) - 1;
+      const months = 20 * 12;
+      return monthlyRate === 0
+        ? effectiveContribution * months
+        : effectiveContribution * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate);
+    };
+
+    const maxValue = Math.max(...Object.values(FUNDS).map((f) => computeYear20Value(f.annualReturn)));
+    const onePoundInPence = 100;
+    const hundredThousandPounds = 100_000 * onePoundInPence;
+    return Math.ceil(maxValue / hundredThousandPounds) * hundredThousandPounds;
+  }, [effectiveContribution]);
+
   const projectionData = useMemo(() => {
     const monthlyRate = Math.pow(1 + selectedFund.annualReturn, 1 / 12) - 1;
 
@@ -56,7 +74,7 @@ export function OwnershipClient({
           <CardTitle className="type-section-title">{selectedFund.label} Projection</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <ProjectionChart data={projectionData} lineColour={selectedFund.colour} />
+          <ProjectionChart data={projectionData} lineColour={selectedFund.colour} yAxisMax={sharedYAxisMax} />
           {monthlyContributionPence === 0 && projectedMonthlyContributionPence > 0 ? (
             <p className="type-caption text-zinc-500 mt-2">
               {/* TODO: thread currency prop when multi-currency goes live */}
