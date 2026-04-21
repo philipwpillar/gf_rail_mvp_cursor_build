@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { computeProjections } from "@/lib/rae/projections";
 import { runRAE } from "@/lib/rae/engine";
+import { DEFAULT_POLICY } from "@/lib/rae/policy/defaults";
 import { PipelineStage } from "@/lib/rae/types";
 import { buildHouseholdSnapshot, type DebtSnapshotRow } from "@/lib/server/snapshot-utils";
 import { applySurplusDelta, parseSurplusDeltaCookie } from "@/lib/server/scenario";
@@ -81,7 +82,7 @@ export default async function OwnershipPage() {
     },
     debts,
   );
-  const liveResult = runRAE(snapshot);
+  const liveResult = runRAE(snapshot, DEFAULT_POLICY);
 
   const projections = computeProjections(snapshot);
   const isOwnershipActive = liveResult.stage === PipelineStage.STAGE_3_OWNERSHIP;

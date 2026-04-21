@@ -21,12 +21,6 @@ export type RequestContext = {
 export const ENGINE_VERSION = "0.1.0" as const;
 
 /**
- * Policy version stub. Will be replaced in Stage D (policy extraction)
- * when RailPolicy becomes a first-class versioned object.
- */
-export const POLICY_VERSION = "default-v1" as const;
-
-/**
  * Extracts X-Request-Id from the incoming request headers, or generates
  * a new UUID if the header is absent. The returned requestId must be
  * echoed back in the X-Request-Id response header and in response meta.

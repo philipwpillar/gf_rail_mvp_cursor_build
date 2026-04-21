@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { applySurplusDelta, parseSurplusDeltaCookie } from "@/lib/server/scenario";
 import { cookies } from "next/headers";
 import { runRAE } from "@/lib/rae/engine";
+import { DEFAULT_POLICY } from "@/lib/rae/policy/defaults";
 import { buildHouseholdSnapshot, type DebtSnapshotRow } from "@/lib/server/snapshot-utils";
 import { formatPounds } from "@/lib/utils";
 
@@ -83,7 +84,7 @@ export default async function ResiliencePage() {
     },
     debtRows ?? [],
   );
-  const scenarioResult = runRAE(snapshot);
+  const scenarioResult = runRAE(snapshot, DEFAULT_POLICY);
 
   const weeklyObligations = (household.fixed_obligations + activeDebtMin) / 4.33;
   const weeksCovered = weeklyObligations > 0 ? household.buffer_balance / weeklyObligations : 0;

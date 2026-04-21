@@ -28,7 +28,8 @@ import { createClient } from "@/lib/supabase/server";
 import { buildRaeRecommendation } from "@/lib/server/rae-recommendation";
 import { parseSurplusDeltaCookie } from "@/lib/server/scenario";
 import { checkIdempotencyCache, storeIdempotencyCache } from "@/lib/api/idempotency";
-import { ENGINE_VERSION, extractRequestContext, POLICY_VERSION } from "@/lib/api/request-context";
+import { ENGINE_VERSION, extractRequestContext } from "@/lib/api/request-context";
+import { DEFAULT_POLICY } from "@/lib/rae/policy/defaults";
 
 export const dynamic = "force-dynamic";
 
@@ -108,7 +109,7 @@ export async function GET(request: Request) {
       meta: {
         request_id: requestId,
         engine_version: ENGINE_VERSION,
-        policy_version: POLICY_VERSION,
+        policy_version: DEFAULT_POLICY.version,
       },
     };
 

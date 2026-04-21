@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Info } from "lucide-react";
 import { computeProjections } from "@/lib/rae/projections";
 import { runRAE } from "@/lib/rae/engine";
+import { DEFAULT_POLICY } from "@/lib/rae/policy/defaults";
 import type { HouseholdSnapshot } from "@/lib/rae/types";
 import type { DebtSnapshotRow } from "@/lib/server/snapshot-utils";
 import { formatPounds } from "@/lib/utils";
@@ -93,7 +94,7 @@ export function DebtProjectionPanel({ snapshot, debts }: DebtProjectionPanelProp
     planCommitmentScore: strategy === "avalanche" ? 0.85 : 0.5,
   };
   const projections = computeProjections(adjustedSnapshot);
-  const liveResult = runRAE(adjustedSnapshot);
+  const liveResult = runRAE(adjustedSnapshot, DEFAULT_POLICY);
   const liveAllocationByDebtId = new Map(
     liveResult.finalAllocation.debtAllocations.map((a) => [a.debtId, a.amount]),
   );

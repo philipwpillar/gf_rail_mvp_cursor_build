@@ -7,6 +7,7 @@ import { AdvisorButton } from "@/components/advisor/AdvisorButton";
 import { buildHouseholdSnapshot, type DebtSnapshotRow } from "@/lib/server/snapshot-utils";
 import { applySurplusDelta } from "@/lib/server/scenario";
 import { runRAE } from "@/lib/rae/engine";
+import { DEFAULT_POLICY } from "@/lib/rae/policy/defaults";
 import { type PipelineStage } from "@/lib/rae/types";
 import type { ReactNode } from "react";
 
@@ -72,7 +73,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
   if (household) {
     try {
       const snapshot = buildHouseholdSnapshot({ ...household, monthly_income: adjustedIncome }, debtRows ?? []);
-      const raeResult = runRAE(snapshot);
+      const raeResult = runRAE(snapshot, DEFAULT_POLICY);
       topBarStage = raeResult.stage;
       topBarSurplus = raeResult.surplus;
     } catch {
