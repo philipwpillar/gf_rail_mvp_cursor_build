@@ -3,6 +3,7 @@ import {
   type AllocationVector,
   type HouseholdSnapshot,
 } from "./types";
+import type { RailPolicy } from "./policy/types";
 
 export function zeroAllocation(): AllocationVector {
   return {
@@ -59,8 +60,15 @@ function getSmallestBalanceDebt(snapshot: HouseholdSnapshot) {
   return [...active].sort((a, b) => a.balance - b.balance)[0];
 }
 
-export function computeAlpha(planCommitmentScore: number): number {
-  return planCommitmentScore >= 0.6 ? 1.0 : 0.7;
+/**
+ * Returns the avalanche weight for debt sequencing.
+ * At or above policy.avalancheThreshold: pure avalanche (policy.avalancheWeight).
+ * Below threshold: blended mode (policy.blendedAvalancheWeight).
+ */
+export function computeAlpha(planCommitmentScore: number, policy: RailPolicy): number {
+  return planCommitmentScore >= policy.avalancheThreshold
+    ? policy.avalancheWeight
+    : policy.blendedAvalancheWeight;
 }
 
 export function computeBaseAllocation(
@@ -69,6 +77,7 @@ export function computeBaseAllocation(
   snapshot: HouseholdSnapshot,
   bMin: number,
   bTarget: number,
+  policy: RailPolicy,
 ): AllocationVector {
   if (surplus <= 0) {
     return zeroAllocation();
@@ -102,8 +111,9 @@ export function computeBaseAllocation(
       return allocation;
     }
 
-    const alpha = computeAlpha(snapshot.planCommitmentScore);
-    if (alpha === 1.0) {
+    const alpha = computeAlpha(snapshot.planCommitmentScore, policy);
+    if (alpha >= policy.avalancheWeight) {
+      // Pure avalanche: all surplus to highest-APR debt
       allocation.debtAllocations.push({ debtId: highestAprDebt.id, amount: surplus });
       roundAndReconcile(allocation, surplus, "debt");
       return allocation;
@@ -116,13 +126,14 @@ export function computeBaseAllocation(
       return allocation;
     }
 
+    // Blended: avalanche weight to highest APR, snowball weight to smallest balance
     allocation.debtAllocations.push({
       debtId: highestAprDebt.id,
-      amount: Math.round(surplus * 0.7),
+      amount: Math.round(surplus * policy.blendedAvalancheWeight),
     });
     allocation.debtAllocations.push({
       debtId: smallestBalanceDebt.id,
-      amount: Math.round(surplus * 0.3),
+      amount: Math.round(surplus * policy.blendedSnowballWeight),
     });
     roundAndReconcile(allocation, surplus, "debt");
     return allocation;

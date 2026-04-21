@@ -1,4 +1,5 @@
-import { DEFAULT_RAE_CONFIG, PipelineStage, type AllocationVector } from "./types";
+import { PipelineStage, type AllocationVector } from "./types";
+import type { RailPolicy } from "./policy/types";
 
 export interface ShockAdjustmentResult {
   finalAllocation: AllocationVector;
@@ -60,8 +61,9 @@ export function applyShockAdjustment(
   allocation: AllocationVector,
   stage: PipelineStage,
   pShock: number,
+  policy: RailPolicy,
 ): ShockAdjustmentResult {
-  const threshold = DEFAULT_RAE_CONFIG.shockThreshold;
+  const threshold = policy.shockThreshold;
 
   if (pShock <= threshold) {
     return {
@@ -86,7 +88,7 @@ export function applyShockAdjustment(
 
   if (stage === PipelineStage.STAGE_2_DEBT) {
     const debtPool = sumDebtAllocations(finalAllocation);
-    const redirectCap = Math.round(debtPool * 0.5);
+    const redirectCap = Math.round(debtPool * policy.shockDebtRedirectCap);
     const redirectAmount = Math.min(redirectCap, Math.round(debtPool * phi));
 
     rebalanceDebtAllocations(finalAllocation.debtAllocations, redirectAmount);
@@ -101,7 +103,7 @@ export function applyShockAdjustment(
   }
 
   const investmentPool = finalAllocation.investmentContribution;
-  const redirectCap = Math.round(investmentPool * 0.5);
+  const redirectCap = Math.round(investmentPool * policy.shockInvestmentRedirectCap);
   const redirectAmount = Math.min(redirectCap, Math.round(investmentPool * phi));
 
   finalAllocation.investmentContribution -= redirectAmount;

@@ -64,18 +64,3 @@ export interface RAEResult {
   rationale: string;
 }
 
-export interface RAEConfig {
-  aprThreshold: number;
-  shockThreshold: number;
-  bMinWeeks: number;
-  bTargetWeeks: number;
-  fragilityLambda: number;
-}
-
-export const DEFAULT_RAE_CONFIG: RAEConfig = {
-  aprThreshold: 0.07,
-  shockThreshold: 0.25,
-  bMinWeeks: 3,
-  bTargetWeeks: 6,
-  fragilityLambda: 1.5, // weight applied to shock-period losses; > 1.0 reflects that a plan-breaking shock costs more than its nominal pound value
-};

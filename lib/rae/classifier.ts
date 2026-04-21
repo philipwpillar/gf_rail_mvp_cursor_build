@@ -1,4 +1,5 @@
-import { DEFAULT_RAE_CONFIG, PipelineStage, type HouseholdSnapshot } from "./types";
+import { PipelineStage, type HouseholdSnapshot } from "./types";
+import type { RailPolicy } from "./policy/types";
 
 const WEEKS_PER_MONTH = 4.33;
 
@@ -14,32 +15,36 @@ function computeWeeklyObligations(snapshot: HouseholdSnapshot): number {
 }
 
 /**
- * B_min = ((fixedObligations + SUM(active minPayment)) / 4.33) * bMinWeeks
+ * B_min = ((fixedObligations + SUM(active minPayment)) / 4.33) * policy.bMinWeeks
  */
-export function computeBMin(snapshot: HouseholdSnapshot): number {
-  return Math.round(computeWeeklyObligations(snapshot) * DEFAULT_RAE_CONFIG.bMinWeeks);
+export function computeBMin(snapshot: HouseholdSnapshot, policy: RailPolicy): number {
+  return Math.round(computeWeeklyObligations(snapshot) * policy.bMinWeeks);
 }
 
 /**
- * B_target = ((fixedObligations + SUM(active minPayment)) / 4.33) * bTargetWeeks
+ * B_target = ((fixedObligations + SUM(active minPayment)) / 4.33) * policy.bTargetWeeks
  */
-export function computeBTarget(snapshot: HouseholdSnapshot): number {
-  return Math.round(computeWeeklyObligations(snapshot) * DEFAULT_RAE_CONFIG.bTargetWeeks);
+export function computeBTarget(snapshot: HouseholdSnapshot, policy: RailPolicy): number {
+  return Math.round(computeWeeklyObligations(snapshot) * policy.bTargetWeeks);
 }
 
 /**
  * Stage rules:
  * 1) If buffer < B_min => Stage 1 (Resilience)
- * 2) Else if any active debt APR > aprThreshold => Stage 2 (Debt)
+ * 2) Else if any active debt APR > policy.aprThreshold => Stage 2 (Debt)
  * 3) Else => Stage 3 (Ownership)
  */
-export function classifyStage(snapshot: HouseholdSnapshot, bMin: number): PipelineStage {
+export function classifyStage(
+  snapshot: HouseholdSnapshot,
+  bMin: number,
+  policy: RailPolicy,
+): PipelineStage {
   if (snapshot.bufferBalance < bMin) {
     return PipelineStage.STAGE_1_RESILIENCE;
   }
 
   const hasHighAprActiveDebt = snapshot.debts.some(
-    (debt) => debt.isActive && debt.apr > DEFAULT_RAE_CONFIG.aprThreshold,
+    (debt) => debt.isActive && debt.apr > policy.aprThreshold,
   );
 
   if (hasHighAprActiveDebt) {

@@ -1,4 +1,5 @@
 import { runRAE } from "@/lib/rae/engine";
+import { DEFAULT_POLICY } from "@/lib/rae/policy/defaults";
 import { PipelineStage, type HouseholdSnapshot } from "@/lib/rae/types";
 
 describe("runRAE seeded households", () => {
@@ -44,7 +45,7 @@ describe("runRAE seeded households", () => {
       ],
     };
 
-    const result = runRAE(snapshot);
+    const result = runRAE(snapshot, DEFAULT_POLICY);
 
     expect(result.obligationStress).toBe(false);
     expect(result.stage).toBe(PipelineStage.STAGE_1_RESILIENCE);
@@ -84,7 +85,7 @@ describe("runRAE seeded households", () => {
       ],
     };
 
-    const result = runRAE(snapshot);
+    const result = runRAE(snapshot, DEFAULT_POLICY);
 
     expect(result.obligationStress).toBe(false);
     expect(result.stage).toBe(PipelineStage.STAGE_3_OWNERSHIP);

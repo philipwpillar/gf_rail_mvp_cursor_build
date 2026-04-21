@@ -1,4 +1,5 @@
-import { DEFAULT_RAE_CONFIG, type HouseholdSnapshot, type RAEResult } from "@/lib/rae/types";
+import type { HouseholdSnapshot, RAEResult } from "@/lib/rae/types";
+import { DEFAULT_POLICY } from "@/lib/rae/policy/defaults";
 import { runRAE } from "@/lib/rae/engine";
 import { computeProjections, type ProjectionResult } from "@/lib/rae/projections";
 import {
@@ -123,7 +124,7 @@ export async function buildRaeRecommendation({
 
   const snapshot: HouseholdSnapshot = buildHouseholdSnapshot(scenarioAdjustedHousehold, debtRows ?? []);
 
-  const result = runRAE(snapshot);
+  const result = runRAE(snapshot, DEFAULT_POLICY);
   const projections = computeProjections(snapshot);
 
   // Compliance guard: only baseline recommendations are written to immutable audit logs.
@@ -146,7 +147,8 @@ export async function buildRaeRecommendation({
         base_investment_contribution: result.baseAllocation.investmentContribution,
         base_debt_allocations: result.baseAllocation.debtAllocations,
         p_shock_used: result.pShockUsed,
-        shock_threshold_used: DEFAULT_RAE_CONFIG.shockThreshold,
+        shock_threshold_used: DEFAULT_POLICY.shockThreshold,
+        policy_version: DEFAULT_POLICY.version,
         shock_applied: result.shockApplied,
         shock_factor: result.shockFactor,
         shock_redirect_amount: result.shockRedirectAmount,

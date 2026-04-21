@@ -1,4 +1,5 @@
 import { runRAE } from "./engine";
+import { DEFAULT_POLICY } from "./policy/defaults";
 import type { DebtInstrument, HouseholdSnapshot } from "./types";
 
 export interface MonthlySnapshot {
@@ -97,7 +98,7 @@ export function computeProjections(snapshot: HouseholdSnapshot): ProjectionResul
   const monthlySnapshots: MonthlySnapshot[] = [];
 
   for (let month = 1; month <= PROJECTION_MONTHS; month += 1) {
-    const result = runRAE(projected);
+    const result = runRAE(projected, DEFAULT_POLICY);
     const allocation = result.finalAllocation;
 
     const debtAllocationById = new Map(

@@ -8,6 +8,7 @@ import { computeSurplus } from "./surplus";
 import { classifyStage, computeBMin, computeBTarget } from "./classifier";
 import { computeBaseAllocation, zeroAllocation } from "./allocator";
 import { applyShockAdjustment } from "./shock";
+import type { RailPolicy } from "./policy/types";
 
 function formatMoneySafe(pence: number, currency?: string): string {
   const symbol = currency === "USD" ? "$" : "£";
@@ -71,10 +72,10 @@ function buildRationale(
   return parts.join(" ");
 }
 
-export function runRAE(snapshot: HouseholdSnapshot): RAEResult {
+export function runRAE(snapshot: HouseholdSnapshot, policy: RailPolicy): RAEResult {
   const { surplus, obligationStress } = computeSurplus(snapshot);
-  const bMin = computeBMin(snapshot);
-  const bTarget = computeBTarget(snapshot);
+  const bMin = computeBMin(snapshot, policy);
+  const bTarget = computeBTarget(snapshot, policy);
 
   if (obligationStress) {
     const zero = zeroAllocation();
@@ -95,12 +96,13 @@ export function runRAE(snapshot: HouseholdSnapshot): RAEResult {
     };
   }
 
-  const stage = classifyStage(snapshot, bMin);
-  const baseAllocation = computeBaseAllocation(stage, surplus, snapshot, bMin, bTarget);
+  const stage = classifyStage(snapshot, bMin, policy);
+  const baseAllocation = computeBaseAllocation(stage, surplus, snapshot, bMin, bTarget, policy);
   const shockResult = applyShockAdjustment(
     baseAllocation,
     stage,
     snapshot.incomeShockProbability,
+    policy,
   );
 
   return {
